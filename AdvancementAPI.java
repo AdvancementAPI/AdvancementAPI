@@ -138,16 +138,14 @@ public class AdvancementAPI {
         return prettyJson;
     }
 
-    public void save() {
+    public void save(String world) {
         File f = new File(
-            Bukkit.getWorld("world").getWorldFolder().getAbsolutePath()
+            Bukkit.getWorld(world).getWorldFolder().getAbsolutePath()
                 + File.separator + "data"
                 + File.separator + "advancements"
                 + File.separator + "minecraft"
                 + File.separator + "story");
-
         FileWriter fileWriter;
-
         try {
             fileWriter = new FileWriter(f.getAbsolutePath() + File.separator + getID() + ".json");
 
@@ -159,5 +157,6 @@ public class AdvancementAPI {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }
