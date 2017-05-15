@@ -6,86 +6,94 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import com.google.common.collect.Lists
 
 /**
 * Created by charliej on 14/05/2017.
+* Edited by GiansCode
 */
 public class AdvancementAPI {
 
     private String id, title, parent, trigger, icon, description, background;
     private List<ItemStack> items;
 
-    AdvancementAPI(String id){
+    AdvancementAPI(String id) {
         this.id = id;
-        this.items = new ArrayList<>();
+        this.items = Lists.newArrayList(); //Ayyy
     }
 
-    public String getID(){
+    public String getID() {
         return id;
     }
 
-    public String getIcon(){
+    public String getIcon() {
         return icon;
     }
-    public void setIcon(String icon){
+    
+    public AdvancementAPI withIcon(String icon) {
         this.icon = icon;
+        return this;
     }
-
-
-    public String getDescription(){
+    
+    public String getDescription() {
         return description;
     }
-    public void setDescription(String description){
+    
+    public AdvancementAPI withDescription(String description) {
         this.description = description;
+        return this;
     }
 
-
-    public String getBackground(){
+    public String getBackground() {
         return description;
     }
-    public void setBackground(String url){
-        this.background = background;
+    
+    public AdvancementAPI withBackground(String url) {
+        this.background = url; //Fixed this for you, too
+        return this;
     }
 
-
-    public String getTitle(){
+    public String getTitle() {
         return title;
     }
-    public void setTitle(String title){
+    
+    public AdvancementAPI withTitle(String title) {
         this.title = title;
+        return this;
     }
 
-
-    public String getParent(){
+    public String getParent() {
         return parent;
     }
-    public void setParent(String parent){
+    
+    public AdvancementAPI withParent(String parent) {
         this.parent = parent;
+        return this;
     }
 
-
-    public String getTrigger(){
+    public String getTrigger() {
         return trigger;
     }
-    public void setTrigger(String trigger){
+    
+    public AdvancementAPI withTrigger(String trigger) {
         this.trigger = trigger;
+        return this;
     }
 
-
-    public List<ItemStack> getItems(){
+    public List<ItemStack> getItems() {
         return items;
     }
-    public void addItem(ItemStack is){
+    
+    public AdvancementAPI withItem(ItemStack is) {
         items.add(is);
+        return this;
     }
 
-    public String getJSON(){
+    public String getJSON() {
         JSONObject json = new JSONObject();
 
         //
@@ -108,8 +116,8 @@ public class AdvancementAPI {
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
 
-        for(ItemStack i : getItems()){
-            itemJSON.put("item", "minecraft:"+i.getType().name().toLowerCase());
+        for(ItemStack i : getItems()) {
+            itemJSON.put("item", "minecraft:"+ i.getType().name().toLowerCase());
             itemJSON.put("amount", i.getAmount());
             itemArray.add(itemJSON);
         }
@@ -137,7 +145,9 @@ public class AdvancementAPI {
                 + File.separator + "advancements"
                 + File.separator + "minecraft"
         + File.separator + "story");
+        
         FileWriter fileWriter;
+        
         try {
             fileWriter = new FileWriter(f.getAbsolutePath() + File.separator + getID() + ".json");
 
@@ -149,6 +159,5 @@ public class AdvancementAPI {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
