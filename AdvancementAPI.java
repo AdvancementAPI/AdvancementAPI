@@ -10,12 +10,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import com.google.common.collect.Lists
+import com.google.common.collect.Lists;
 
 /**
-* Created by charliej on 14/05/2017.
-* Edited by GiansCode
-*/
+ * Created by charliej on 14/05/2017.
+ * Edited by GiansCode
+ */
 public class AdvancementAPI {
 
     private String id, title, parent, trigger, icon, description, background;
@@ -33,25 +33,25 @@ public class AdvancementAPI {
     public String getIcon() {
         return icon;
     }
-    
+
     public AdvancementAPI withIcon(String icon) {
         this.icon = icon;
         return this;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     public AdvancementAPI withDescription(String description) {
         this.description = description;
         return this;
     }
 
     public String getBackground() {
-        return description;
+        return background;
     }
-    
+
     public AdvancementAPI withBackground(String url) {
         this.background = url; //Fixed this for you, too
         return this;
@@ -60,7 +60,7 @@ public class AdvancementAPI {
     public String getTitle() {
         return title;
     }
-    
+
     public AdvancementAPI withTitle(String title) {
         this.title = title;
         return this;
@@ -69,7 +69,7 @@ public class AdvancementAPI {
     public String getParent() {
         return parent;
     }
-    
+
     public AdvancementAPI withParent(String parent) {
         this.parent = parent;
         return this;
@@ -78,7 +78,7 @@ public class AdvancementAPI {
     public String getTrigger() {
         return trigger;
     }
-    
+
     public AdvancementAPI withTrigger(String trigger) {
         this.trigger = trigger;
         return this;
@@ -87,7 +87,7 @@ public class AdvancementAPI {
     public List<ItemStack> getItems() {
         return items;
     }
-    
+
     public AdvancementAPI withItem(ItemStack is) {
         items.add(is);
         return this;
@@ -144,10 +144,10 @@ public class AdvancementAPI {
                 + File.separator + "data"
                 + File.separator + "advancements"
                 + File.separator + "minecraft"
-        + File.separator + "story");
-        
+                + File.separator + "story");
+
         FileWriter fileWriter;
-        
+
         try {
             fileWriter = new FileWriter(f.getAbsolutePath() + File.separator + getID() + ".json");
 
