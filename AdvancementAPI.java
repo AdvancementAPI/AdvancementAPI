@@ -19,11 +19,13 @@ import com.google.common.collect.Lists;
 public class AdvancementAPI {
 
     private String id, title, parent, trigger, icon, description, background, frame;
+    private boolean announce;
     private List<ItemStack> items;
 
     AdvancementAPI(String id) {
         this.id = id;
         this.items = Lists.newArrayList();
+        this.announce = true;
     }
 
     public String getID() {
@@ -102,6 +104,14 @@ public class AdvancementAPI {
         return this;
     }
 
+    public boolean getAnnouncement(){
+        return announce;
+    }
+    public AdvancementAPI withAnnouncement(boolean announce){
+        this.announce = announce;
+        return this;
+    }
+
     public String getJSON() {
         JSONObject json = new JSONObject();
 
@@ -115,6 +125,7 @@ public class AdvancementAPI {
         display.put("description", getDescription());
         display.put("background", getBackground());
         display.put("frame", getFrame());
+        display.put("announce_to_chat", getAnnouncement());
 
 
         json.put("parent", getParent());
@@ -131,6 +142,12 @@ public class AdvancementAPI {
             itemJSON.put("amount", i.getAmount());
             itemArray.add(itemJSON);
         }
+
+        /**
+         * TODO
+         * define each criteria, for each criteria in list,
+         * add items, trigger and conditions
+         */
 
         conditions.put("items", itemArray);
         elytra.put("trigger", getTrigger());
