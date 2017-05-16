@@ -18,12 +18,12 @@ import com.google.common.collect.Lists;
  */
 public class AdvancementAPI {
 
-    private String id, title, parent, trigger, icon, description, background;
+    private String id, title, parent, trigger, icon, description, background, frame;
     private List<ItemStack> items;
 
     AdvancementAPI(String id) {
         this.id = id;
-        this.items = Lists.newArrayList(); //Ayyy
+        this.items = Lists.newArrayList();
     }
 
     public String getID() {
@@ -93,22 +93,32 @@ public class AdvancementAPI {
         return this;
     }
 
+    public String getFrame() {
+        return frame;
+    }
+
+    public AdvancementAPI withFrame(String frame) {
+        this.frame = frame;
+        return this;
+    }
+
     public String getJSON() {
         JSONObject json = new JSONObject();
 
-        //
+
         JSONObject icon = new JSONObject();
         icon.put("item", getIcon());
-        //
+
         JSONObject display = new JSONObject();
         display.put("icon", icon);
         display.put("title", getTitle());
         display.put("description", getDescription());
         display.put("background", getBackground());
+        display.put("frame", getFrame());
 
-        //
+
         json.put("parent", getParent());
-        //
+
         JSONObject criteria = new JSONObject();
         JSONObject conditions = new JSONObject();
         JSONObject elytra = new JSONObject();
