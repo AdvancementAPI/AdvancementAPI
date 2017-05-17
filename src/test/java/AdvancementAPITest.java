@@ -19,12 +19,14 @@ import static org.mockito.Mockito.mock;
 public class AdvancementAPITest {
 
 
+    private final String worldName = "world";
+
     @Before
     public void setUp() {
         World world = mock(World.class);
 
 
-        Mockito.when(world.getWorldFolder()).thenReturn(new File("world"));
+        Mockito.when(world.getWorldFolder()).thenReturn(new File(worldName));
 
         Server server = mock(Server.class);
         Mockito.when(server.getLogger()).thenReturn(Logger.getAnonymousLogger());
@@ -45,7 +47,7 @@ public class AdvancementAPITest {
                 .withTrigger("minecraft:consume_item")
                 .withBackground("minecraft:textures/gui/advancements/backgrounds/stone.png")
                 .withItem(new ItemStack(Material.APPLE, 1));
-        api.save("world");
+        api.save(worldName);
 
 
     }
