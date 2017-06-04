@@ -3,7 +3,9 @@ package io.chazza.advancementapi;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.NamespacedKey;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.File;
@@ -18,11 +20,12 @@ import com.google.common.collect.Lists;
  */
 public class AdvancementAPI {
 
-    private String id, title, parent, trigger, icon, description, background, frame;
+	private NamespacedKey id;
+    private String title, parent, trigger, icon, description, background, frame;
     private boolean announce;
     private List<ItemStack> items;
 
-    AdvancementAPI(String id) {
+    AdvancementAPI(NamespacedKey id) {
         this.id = id;
         this.items = Lists.newArrayList();
         this.announce = true;
@@ -166,24 +169,18 @@ public class AdvancementAPI {
     }
 
     public void save(String world) {
-        File f = new File(
-            Bukkit.getWorld(world).getWorldFolder().getAbsolutePath()
-                + File.separator + "data"
-                + File.separator + "advancements"
-                + File.separator + "minecraft"
-                + File.separator + "story");
-        FileWriter fileWriter;
-        try {
-            fileWriter = new FileWriter(f.getAbsolutePath() + File.separator + getID() + ".json");
-
-            fileWriter.write(getJSON());
-            fileWriter.close();
-
-            Bukkit.getLogger().info("[AdvancementAPI] Created " + getID() + ".json.");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        this.save(Bukkit.getWorld(world));
+    }
+    
+    public void save(World world) {
+    	File file = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
+    			+ File.separator + id.getNamespace() + File.separator + id.getKey());
+    	
+    	try(FileWriter writer = new FileWriter(file)) {
+    		writer.write(getJSON());
+    		Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
     }
 }
