@@ -1,8 +1,5 @@
 import io.chazza.advancementapi.AdvancementAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,13 +37,13 @@ public class AdvancementAPITest {
     @Test
     public void createAndSave() {
 
-        AdvancementAPI api = new AdvancementAPI("addiction")
+        AdvancementAPI api = new AdvancementAPI(new NamespacedKey("test", "addiction"))
                 .withTitle("Addiction!")
                 .withDescription("Eat an Apple!")
                 .withIcon("minecraft:golden_apple")
                 .withTrigger("minecraft:consume_item")
                 .withBackground("minecraft:textures/gui/advancements/backgrounds/stone.png")
-                .withItem(new ItemStack(Material.APPLE, 1));
+                .withItem(new ItemStack(Material.APPLE, 1)).withFrame(AdvancementAPI.FrameType.GOAL);
         api.save(worldName);
 
 
