@@ -1,17 +1,18 @@
 package io.chazza.advancementapi;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.NamespacedKey;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import com.google.common.collect.Lists;
 
 /**
  * Created by charliej on 14/05/2017.
@@ -19,14 +20,23 @@ import java.util.List;
  */
 public class AdvancementAPI {
 
-    private String id, title, parent, trigger, icon, description, background, frame;
+	private NamespacedKey id;
+    private String title, parent, trigger, icon, description, background, frame;
     private boolean announce;
     private List<ItemStack> items;
 
-    public AdvancementAPI(String id) {
+    AdvancementAPI(NamespacedKey id) {
         this.id = id;
         this.items = Lists.newArrayList();
         this.announce = true;
+    }
+
+    public String getID() {
+        return id;
+    }
+
+    public String getIcon() {
+        return icon;
     }
 
     public AdvancementAPI withIcon(String icon) {
@@ -34,9 +44,17 @@ public class AdvancementAPI {
         return this;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public AdvancementAPI withDescription(String description) {
         this.description = description;
         return this;
+    }
+
+    public String getBackground() {
+        return background;
     }
 
     public AdvancementAPI withBackground(String url) {
@@ -44,9 +62,17 @@ public class AdvancementAPI {
         return this;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public AdvancementAPI withTitle(String title) {
         this.title = title;
         return this;
+    }
+
+    public String getParent() {
+        return parent;
     }
 
     public AdvancementAPI withParent(String parent) {
@@ -54,9 +80,17 @@ public class AdvancementAPI {
         return this;
     }
 
+    public String getTrigger() {
+        return trigger;
+    }
+
     public AdvancementAPI withTrigger(String trigger) {
         this.trigger = trigger;
         return this;
+    }
+
+    public List<ItemStack> getItems() {
+        return items;
     }
 
     public AdvancementAPI withItem(ItemStack is) {
@@ -64,44 +98,21 @@ public class AdvancementAPI {
         return this;
     }
 
+    public String getFrame() {
+        return frame;
+    }
+
     public AdvancementAPI withFrame(String frame) {
         this.frame = frame;
         return this;
     }
 
-    public AdvancementAPI withAnnouncement(boolean announce) {
+    public boolean getAnnouncement(){
+        return announce;
+    }
+    public AdvancementAPI withAnnouncement(boolean announce){
         this.announce = announce;
         return this;
-    }
-
-    public void save(String world) {
-
-        File f = new File(
-                Bukkit.getWorld(world).getWorldFolder().getAbsolutePath()
-                        + File.separator + "data"
-                        + File.separator + "advancements"
-                        + File.separator + "minecraft"
-                        + File.separator + "story");
-
-        if (f.mkdirs()) {
-            FileWriter fileWriter;
-            try {
-                fileWriter = new FileWriter(f.getAbsolutePath() + File.separator + getID() + ".json");
-
-                fileWriter.write(getJSON());
-                fileWriter.close();
-
-                // Bukkit.getLogger().info("[io.chazza.advancementapi.AdvancementAPI] Created " + getID() + ".json.");
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    public String getID() {
-        return id;
     }
 
     public String getJSON() {
@@ -129,8 +140,8 @@ public class AdvancementAPI {
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
 
-        for (ItemStack i : getItems()) {
-            itemJSON.put("item", "minecraft:" + i.getType().name().toLowerCase());
+        for(ItemStack i : getItems()) {
+            itemJSON.put("item", "minecraft:"+ i.getType().name().toLowerCase());
             itemJSON.put("amount", i.getAmount());
             itemArray.add(itemJSON);
         }
@@ -157,39 +168,19 @@ public class AdvancementAPI {
         return prettyJson;
     }
 
-    public String getIcon() {
-        return icon;
+    public void save(String world) {
+        this.save(Bukkit.getWorld(world));
     }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getBackground() {
-        return background;
-    }
-
-    public String getFrame() {
-        return frame;
-    }
-
-    public boolean getAnnouncement() {
-        return announce;
-    }
-
-    public String getParent() {
-        return parent;
-    }
-
-    public List<ItemStack> getItems() {
-        return items;
-    }
-
-    public String getTrigger() {
-        return trigger;
+    
+    public void save(World world) {
+    	File file = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
+    			+ File.separator + id.getNamespace() + File.separator + id.getKey());
+    	
+    	try(FileWriter writer = new FileWriter(file)) {
+    		writer.write(getJSON());
+    		Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
     }
 }
