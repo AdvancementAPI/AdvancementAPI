@@ -3,9 +3,9 @@ package io.chazza.advancementapi;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.NamespacedKey;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.File;
@@ -18,10 +18,12 @@ import com.google.common.collect.Lists;
  * Created by charliej on 14/05/2017.
  * Edited by GiansCode
  */
+
 public class AdvancementAPI {
 
 	private NamespacedKey id;
-    private String title, parent, trigger, icon, description, background, frame;
+    private String title, parent, trigger, icon, description, background;
+    private FrameType frame;
     private boolean announce;
     private List<ItemStack> items;
 
@@ -32,7 +34,7 @@ public class AdvancementAPI {
     }
 
     public String getID() {
-        return id;
+        return id.toString();
     }
 
     public String getIcon() {
@@ -98,11 +100,11 @@ public class AdvancementAPI {
         return this;
     }
 
-    public String getFrame() {
+    public FrameType getFrame() {
         return frame;
     }
 
-    public AdvancementAPI withFrame(String frame) {
+    public AdvancementAPI withFrame(FrameType frame) {
         this.frame = frame;
         return this;
     }
@@ -115,7 +117,8 @@ public class AdvancementAPI {
         return this;
     }
 
-    public String getJSON() {
+    @SuppressWarnings("unchecked")
+	public String getJSON() {
         JSONObject json = new JSONObject();
 
 
@@ -127,7 +130,7 @@ public class AdvancementAPI {
         display.put("title", getTitle());
         display.put("description", getDescription());
         display.put("background", getBackground());
-        display.put("frame", getFrame());
+        display.put("frame", getFrame().toString());
         display.put("announce_to_chat", getAnnouncement());
 
 
@@ -183,4 +186,19 @@ public class AdvancementAPI {
     		e.printStackTrace();
     	}
     }
+    
+    
+    public enum FrameType {
+    	TASK("task"),
+    	GOAL("goal"),
+    	CHALLENGE("challenge");
+    	private String name = "task";
+    	private FrameType(String name){
+    	  this.name = name;
+    	}  
+    	public String toString(){
+    	  return name;
+    	}
+    }
+    
 }
