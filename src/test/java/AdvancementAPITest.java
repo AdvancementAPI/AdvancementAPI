@@ -42,6 +42,8 @@ public class AdvancementAPITest {
                 .withDescription("Eat an Apple!")
                 .withIcon("minecraft:golden_apple")
                 .withTrigger("minecraft:consume_item")
+                .withShouldBeHiddenBeforeArchieved(false)
+                .withToast(false)
                 .withBackground("minecraft:textures/gui/advancements/backgrounds/stone.png")
                 .withItem(new ItemStack(Material.APPLE, 1)).withFrame(AdvancementAPI.FrameType.GOAL);
         api.save(worldName);

@@ -3,6 +3,8 @@ package io.chazza.advancementapi;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -23,9 +25,10 @@ import java.util.List;
 public class AdvancementAPI {
 
     private NamespacedKey id;
-    private String title, parent, trigger, icon, description, background;
+    private String parent, trigger, icon, background;
+    private BaseComponent title, description;
     private FrameType frame;
-    private boolean announce;
+    private boolean announce, shouldShowToast, shouldBeHiddenBeforeArchieved;
     private List<ItemStack> items;
 
     public AdvancementAPI(NamespacedKey id) {
@@ -44,6 +47,10 @@ public class AdvancementAPI {
     }
 
     public AdvancementAPI withDescription(String description) {
+        this.description = new TextComponent(description);
+        return this;
+    }
+    public AdvancementAPI withDescription(BaseComponent description) {
         this.description = description;
         return this;
     }
@@ -54,9 +61,15 @@ public class AdvancementAPI {
     }
 
     public AdvancementAPI withTitle(String title) {
+        this.title = new TextComponent(title);
+        return this;
+    }
+
+    public AdvancementAPI withTitle(BaseComponent title) {
         this.title = title;
         return this;
     }
+
 
     public AdvancementAPI withParent(String parent) {
         this.parent = parent;
@@ -80,6 +93,16 @@ public class AdvancementAPI {
 
     public AdvancementAPI withAnnouncement(boolean announce) {
         this.announce = announce;
+        return this;
+    }
+
+    public AdvancementAPI withToast(boolean showToast) {
+        this.shouldShowToast = showToast;
+        return this;
+    }
+
+    public AdvancementAPI withShouldBeHiddenBeforeArchieved(boolean shouldBeHiddenBeforeArchieved) {
+        this.shouldBeHiddenBeforeArchieved = shouldBeHiddenBeforeArchieved;
         return this;
     }
 
@@ -119,6 +142,8 @@ public class AdvancementAPI {
         display.put("background", getBackground());
         display.put("frame", getFrame().toString());
         display.put("announce_to_chat", getAnnouncement());
+        display.put("show_toast", getToast());
+        display.put("hidden", getshouldBeHiddenBeforeArchieved());
 
 
         json.put("parent", getParent());
@@ -162,11 +187,11 @@ public class AdvancementAPI {
         return icon;
     }
 
-    public String getTitle() {
+    public BaseComponent getTitle() {
         return title;
     }
 
-    public String getDescription() {
+    public BaseComponent getDescription() {
         return description;
     }
 
@@ -180,6 +205,13 @@ public class AdvancementAPI {
 
     public boolean getAnnouncement() {
         return announce;
+    }
+
+    public boolean getToast() {
+        return shouldShowToast;
+    }
+    public boolean getshouldBeHiddenBeforeArchieved() {
+        return shouldBeHiddenBeforeArchieved;
     }
 
     public String getParent() {
