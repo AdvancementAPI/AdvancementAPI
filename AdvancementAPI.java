@@ -11,26 +11,29 @@ import org.json.simple.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import com.google.common.collect.Lists;
 
 /**
  * Created by charliej on 14/05/2017.
- * Edited by GiansCode
+ * Last modification DiscowZombie on 5/06/2017.
  */
 
 public class AdvancementAPI {
 
-	private NamespacedKey id;
+    private NamespacedKey id;
     private String title, parent, trigger, icon, description, background;
+    private boolean announce, toast;
     private FrameType frame;
-    private boolean announce;
     private List<ItemStack> items;
 
-    AdvancementAPI(NamespacedKey id) {
+    public AdvancementAPI(NamespacedKey id) {
         this.id = id;
         this.items = Lists.newArrayList();
         this.announce = true;
+        this.toast = true;
     }
 
     public String getID() {
@@ -60,7 +63,7 @@ public class AdvancementAPI {
     }
 
     public AdvancementAPI withBackground(String url) {
-        this.background = url; //Fixed this for you, too
+        this.background = url;
         return this;
     }
 
@@ -112,15 +115,23 @@ public class AdvancementAPI {
     public boolean getAnnouncement(){
         return announce;
     }
+    
     public AdvancementAPI withAnnouncement(boolean announce){
         this.announce = announce;
         return this;
     }
+    
+    public boolean getToast(){
+    	return toast;
+    }
+    
+    public AdvancementAPI withToast(boolean toast){
+    	this.toast = toast;
+    	return this;
+    }
 
-    @SuppressWarnings("unchecked")
 	public String getJSON() {
         JSONObject json = new JSONObject();
-
 
         JSONObject icon = new JSONObject();
         icon.put("item", getIcon());
@@ -132,7 +143,7 @@ public class AdvancementAPI {
         display.put("background", getBackground());
         display.put("frame", getFrame().toString());
         display.put("announce_to_chat", getAnnouncement());
-
+        display.put("show_toast", getToast());
 
         json.put("parent", getParent());
 
@@ -150,8 +161,7 @@ public class AdvancementAPI {
         }
 
         /**
-         * TODO
-         * define each criteria, for each criteria in list,
+         * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
          */
 
@@ -164,7 +174,6 @@ public class AdvancementAPI {
         json.put("criteria", criteria);
         json.put("display", display);
 
-
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String prettyJson = gson.toJson(json);
 
@@ -176,15 +185,24 @@ public class AdvancementAPI {
     }
     
     public void save(World world) {
-    	File file = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
-    			+ File.separator + id.getNamespace() + File.separator + id.getKey());
-    	
-    	try(FileWriter writer = new FileWriter(file)) {
-    		writer.write(getJSON());
+    	try {
+			Files.createDirectories(Paths.get(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+					+ File.separator + id.getNamespace()));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+    	File file = new File(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+    			+ File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
+    	try{
+			file.createNewFile();
+			FileWriter writer = new FileWriter(file);
+			writer.write(getJSON());
+    		writer.flush();
+    		writer.close();
     		Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
-    	} catch (IOException e) {
-    		e.printStackTrace();
-    	}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
     }
     
     
@@ -192,10 +210,13 @@ public class AdvancementAPI {
     	TASK("task"),
     	GOAL("goal"),
     	CHALLENGE("challenge");
+    	
     	private String name = "task";
+    	
     	private FrameType(String name){
     	  this.name = name;
     	}  
+    	
     	public String toString(){
     	  return name;
     	}
