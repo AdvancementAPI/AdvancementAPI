@@ -26,7 +26,7 @@ import java.util.List;
  */
 
 @Builder(builderMethodName = "hiddenBuilder")
-@ToString(includeFieldNames = true,exclude = {"items"})
+@ToString(exclude = {"items"})
 public class AdvancementAPI {
 
     @Getter
