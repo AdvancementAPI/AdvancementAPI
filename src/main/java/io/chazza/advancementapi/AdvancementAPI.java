@@ -1,44 +1,47 @@
 package io.chazza.advancementapi;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import com.google.common.collect.Lists;
 
 /**
  * Created by charliej on 14/05/2017.
- * Edited by GiansCode
+ * Last modification DiscowZombie on 5/06/2017.
  */
 
 public class AdvancementAPI {
 
     private NamespacedKey id;
-    private String parent, trigger, icon, background;
-    private BaseComponent title, description;
+    private String title, parent, trigger, icon, description, background;
+    private boolean announce, toast,hidden;
     private FrameType frame;
-    private boolean announce, shouldShowToast, shouldBeHiddenBeforeArchieved;
     private List<ItemStack> items;
 
     public AdvancementAPI(NamespacedKey id) {
         this.id = id;
         this.items = Lists.newArrayList();
         this.announce = true;
+        this.toast = true;
     }
 
     public String getID() {
         return id.toString();
+    }
+
+    public String getIcon() {
+        return icon;
     }
 
     public AdvancementAPI withIcon(String icon) {
@@ -46,34 +49,44 @@ public class AdvancementAPI {
         return this;
     }
 
-    public AdvancementAPI withDescription(String description) {
-        this.description = new TextComponent(description);
-        return this;
+    public String getDescription() {
+        return description;
     }
-    public AdvancementAPI withDescription(BaseComponent description) {
+
+    public AdvancementAPI withDescription(String description) {
         this.description = description;
         return this;
     }
 
+    public String getBackground() {
+        return background;
+    }
+
     public AdvancementAPI withBackground(String url) {
-        this.background = url; //Fixed this for you, too
+        this.background = url;
         return this;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public AdvancementAPI withTitle(String title) {
-        this.title = new TextComponent(title);
-        return this;
-    }
-
-    public AdvancementAPI withTitle(BaseComponent title) {
         this.title = title;
         return this;
     }
 
+    public String getParent() {
+        return parent;
+    }
 
     public AdvancementAPI withParent(String parent) {
         this.parent = parent;
         return this;
+    }
+
+    public String getTrigger() {
+        return trigger;
     }
 
     public AdvancementAPI withTrigger(String trigger) {
@@ -81,9 +94,17 @@ public class AdvancementAPI {
         return this;
     }
 
+    public List<ItemStack> getItems() {
+        return items;
+    }
+
     public AdvancementAPI withItem(ItemStack is) {
         items.add(is);
         return this;
+    }
+
+    public FrameType getFrame() {
+        return frame;
     }
 
     public AdvancementAPI withFrame(FrameType frame) {
@@ -91,46 +112,26 @@ public class AdvancementAPI {
         return this;
     }
 
-    public AdvancementAPI withAnnouncement(boolean announce) {
+    public boolean getAnnouncement(){
+        return announce;
+    }
+
+    public AdvancementAPI withAnnouncement(boolean announce){
         this.announce = announce;
         return this;
     }
 
-    public AdvancementAPI withToast(boolean showToast) {
-        this.shouldShowToast = showToast;
-        return this;
+    public boolean getToast(){
+    	return toast;
     }
 
-    public AdvancementAPI withShouldBeHiddenBeforeArchieved(boolean shouldBeHiddenBeforeArchieved) {
-        this.shouldBeHiddenBeforeArchieved = shouldBeHiddenBeforeArchieved;
-        return this;
+    public AdvancementAPI withToast(boolean toast){
+    	this.toast = toast;
+    	return this;
     }
 
-    public void save(String world) {
-        this.save(Bukkit.getWorld(world));
-    }
-
-    public void save(World world) {
-
-
-        File dir = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
-                + File.separator + id.getNamespace());
-
-        if (dir.mkdirs()) {
-            File file = new File(dir.getPath() + File.separator + id.getKey() + ".json");
-            try (FileWriter writer = new FileWriter(file)) {
-                writer.write(getJSON());
-                Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public String getJSON() {
+	public String getJSON() {
         JSONObject json = new JSONObject();
-
 
         JSONObject icon = new JSONObject();
         icon.put("item", getIcon());
@@ -143,8 +144,6 @@ public class AdvancementAPI {
         display.put("frame", getFrame().toString());
         display.put("announce_to_chat", getAnnouncement());
         display.put("show_toast", getToast());
-        display.put("hidden", getshouldBeHiddenBeforeArchieved());
-
 
         json.put("parent", getParent());
 
@@ -155,15 +154,14 @@ public class AdvancementAPI {
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
 
-        for (ItemStack i : getItems()) {
-            itemJSON.put("item", "minecraft:" + i.getType().name().toLowerCase());
+        for(ItemStack i : getItems()) {
+            itemJSON.put("item", "minecraft:"+ i.getType().name().toLowerCase());
             itemJSON.put("amount", i.getAmount());
             itemArray.add(itemJSON);
         }
 
         /**
-         * TODO
-         * define each criteria, for each criteria in list,
+         * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
          */
 
@@ -176,70 +174,52 @@ public class AdvancementAPI {
         json.put("criteria", criteria);
         json.put("display", display);
 
-
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String prettyJson = gson.toJson(json);
 
         return prettyJson;
     }
 
-    public String getIcon() {
-        return icon;
+    public void save(String world) {
+        this.save(Bukkit.getWorld(world));
     }
-
-    public BaseComponent getTitle() {
-        return title;
+    
+    public void save(World world) {
+    	try {
+			Files.createDirectories(Paths.get(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+					+ File.separator + id.getNamespace()));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+    	File file = new File(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+    			+ File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
+    	try{
+			file.createNewFile();
+			FileWriter writer = new FileWriter(file);
+			writer.write(getJSON());
+    		writer.flush();
+    		writer.close();
+    		Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+		}catch(IOException e){
+			e.printStackTrace();
+		}
     }
-
-    public BaseComponent getDescription() {
-        return description;
-    }
-
-    public String getBackground() {
-        return background;
-    }
-
-    public FrameType getFrame() {
-        return frame;
-    }
-
-    public boolean getAnnouncement() {
-        return announce;
-    }
-
-    public boolean getToast() {
-        return shouldShowToast;
-    }
-    public boolean getshouldBeHiddenBeforeArchieved() {
-        return shouldBeHiddenBeforeArchieved;
-    }
-
-    public String getParent() {
-        return parent;
-    }
-
-    public List<ItemStack> getItems() {
-        return items;
-    }
-
-    public String getTrigger() {
-        return trigger;
-    }
-
-
+    
+    
     public enum FrameType {
-        TASK("task"),
-        GOAL("goal"),
-        CHALLENGE("challenge");
-        private String name = "task";
+    	TASK("task"),
+    	GOAL("goal"),
+    	CHALLENGE("challenge");
 
-        private FrameType(String name) {
-            this.name = name;
-        }
+    	private String name = "task";
 
-        public String toString() {
-            return name;
-        }
+    	private FrameType(String name){
+    	  this.name = name;
+    	}
+
+    	public String toString(){
+    	  return name;
+    	}
     }
-
+    
 }
