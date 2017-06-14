@@ -280,10 +280,10 @@ public class MessengerAdvancement {
         return this;
     }
 
-    public MessengerAdvancement show(Player... players) {
+    public MessengerAdvancement show(JavaPlugin plugin, Player... players) {
         add();
         grant(players);
-        Bukkit.getScheduler().runTaskLater(ContentMakersPlugin.getInstance(), new Runnable() {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             @Override
             public void run() {
                 revoke(players);
