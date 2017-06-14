@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
+import lombok.ToString;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -24,7 +25,8 @@ import java.util.List;
  * Edited by GiansCode
  */
 
-@Builder
+@Builder(builderMethodName = "hiddenBuilder")
+@ToString(includeFieldNames = true,exclude = {"items"})
 public class AdvancementAPI {
 
     @Getter
@@ -40,6 +42,11 @@ public class AdvancementAPI {
     private boolean announce = true, shouldShowToast = true, shouldBeHiddenBeforeArchieved = true;
     @Singular
     private List<ItemStack> items = Lists.newArrayList();
+
+
+    public static AdvancementAPIBuilder builder(NamespacedKey id){
+        return AdvancementAPI.hiddenBuilder().id(id);
+    }
 
 
     public void save(String world) {

@@ -38,9 +38,7 @@ public class AdvancementAPITest {
     @Test
     public void createAndSave() {
 
-
-        AdvancementAPI.builder()
-                .id(new NamespacedKey("test","addiction"))
+        AdvancementAPI advancementAPI = AdvancementAPI.builder(new NamespacedKey("test","addiction"))
                 .title(new TextComponent("Addiction!"))
                 .description(new TextComponent("Eat an Apple"))
                 .icon("minecraft:golden_apple")
@@ -50,7 +48,11 @@ public class AdvancementAPITest {
                 .background("minecraft:textures/gui/advancements/backgrounds/stone.png")
                 .item(new ItemStack(Material.APPLE, 1))
                 .frame(AdvancementAPI.FrameType.GOAL)
-                .build().save(worldName);
+                .build();
+
+        System.out.println(advancementAPI.toString());
+        advancementAPI.save(worldName);
+
     }
 
 }
