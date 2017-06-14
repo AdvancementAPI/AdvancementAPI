@@ -26,7 +26,6 @@ import java.util.List;
  */
 
 @Builder(builderMethodName = "hiddenBuilder")
-@ToString(exclude = {"items"})
 public class AdvancementAPI {
 
     @Getter
@@ -126,6 +125,7 @@ public class AdvancementAPI {
         return prettyJson;
     }
 
+
     public enum FrameType {
         TASK("task"),
         GOAL("goal"),
@@ -135,6 +135,12 @@ public class AdvancementAPI {
         FrameType(String name) {
             this.name = name;
         }
+
+        public static FrameType RANDOM(){
+            FrameType[] frameTypes = FrameType.values();
+            return frameTypes[(int)(Math.random()*(frameTypes.length-1))];
+        }
+
 
         public String toString() {
             return name;

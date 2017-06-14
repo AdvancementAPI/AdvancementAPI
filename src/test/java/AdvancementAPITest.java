@@ -50,7 +50,7 @@ public class AdvancementAPITest {
                 .frame(AdvancementAPI.FrameType.GOAL)
                 .build();
 
-        System.out.println(advancementAPI.toString());
+        System.out.println(advancementAPI.getJSON());
         advancementAPI.save(worldName);
 
     }
