@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
  * Lately modified by DiscowZombie on 5/06/2017.
  */
 
+//Renamed into MessengerAdvancement as AdvancementAPI seems to be a better name for some Singleton @PROgrm_JARvis
 public class MessengerAdvancement {
 
     private NamespacedKey id;
@@ -227,6 +228,7 @@ public class MessengerAdvancement {
             itemArray.add(itemJSON);
         }
 
+	//Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
         /*
          * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
