@@ -44,7 +44,7 @@ public class AdvancementAPI {
     @Getter
     private boolean announce = true, shouldShowToast = true, shouldBeHiddenBeforeArchieved = true;
     @Singular
-    private List<ItemStack> items = Lists.newArrayList();
+    private List<ItemStack> items;
 
 
     public static AdvancementAPIBuilder builder(NamespacedKey id){
