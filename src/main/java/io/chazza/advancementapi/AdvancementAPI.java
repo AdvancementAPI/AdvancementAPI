@@ -194,7 +194,7 @@ public class AdvancementAPI {
         TASK("task"),
         GOAL("goal"),
         CHALLENGE("challenge");
-        private String name = "task";
+        private String name;
 
         FrameType(String name) {
             this.name = name;
