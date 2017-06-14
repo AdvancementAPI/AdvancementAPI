@@ -8,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.File;
@@ -44,8 +45,8 @@ public class MessengerAdvancement {
         this.id = id;
     }
 
-    public MessengerAdvancement(String id) {
-        this.id = new NamespacedKey(ContentMakersPlugin.getInstance(), id);
+    public MessengerAdvancement(JavaPlugin plugin, String id) {
+        this.id = new NamespacedKey(plugin, id);
     }
 
     public String getID() {
@@ -152,23 +153,8 @@ public class MessengerAdvancement {
         return this;
     }
 
-    public MessengerAdvancement withFrame(String frame) {
-        if (frame.equalsIgnoreCase("random")) {
-            FrameType[] frames = FrameType.values();
-            setFrame(frames[(int)(Math.random()*(frames.length-1))]);
-        } else setFrame(FrameType.valueOf(frame));
-        return this;
-    }
-
     public void setFrame(FrameType frame) {
         this.frame = frame;
-    }
-
-    public void setFrame(String frame) {
-        if (frame.equalsIgnoreCase("random")) {
-            FrameType[] frames = FrameType.values();
-            setFrame(frames[(int)(Math.random()*(frames.length-1))]);
-        } else setFrame(FrameType.valueOf(frame));
     }
 
     public boolean getAnnouncement(){
@@ -346,6 +332,11 @@ public class MessengerAdvancement {
 
         FrameType(String name){
             this.name = name;
+        }
+
+        public FrameType RANDOM() {
+            FrameType[] frameTypes = FrameType.values();
+            return frameTypes[(int)(Math.random()*(frameTypes.length-1))];
         }
 
         public String toString(){
