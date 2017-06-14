@@ -11,13 +11,17 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -124,6 +128,66 @@ public class AdvancementAPI {
 
         return prettyJson;
     }
+
+
+    @SuppressWarnings("deprecation")
+    public AdvancementAPI add() {
+        try {
+            Bukkit.getUnsafe().loadAdvancement(id, getJSON());
+            Bukkit.getLogger().info("Successfully registered advancement.");
+        } catch (IllegalArgumentException e) {
+            Bukkit.getLogger().info("Error registering advancement. It seems to already exist!");
+        }
+        return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    public AdvancementAPI remove() {
+        Bukkit.getUnsafe().removeAdvancement(id);
+        return this;
+    }
+
+
+    public AdvancementAPI show(JavaPlugin plugin,Player... players) {
+        add();
+        grant(players);
+        Bukkit.getScheduler().runTaskLater(plugin, (Runnable) () -> {
+            revoke(players);
+            remove();
+        }, 20L);
+        return this;
+    }
+
+    public AdvancementAPI grant(Player... players) {
+        Advancement advancement = getAdvancement();
+        for (Player player : players) {
+            if (!player.getAdvancementProgress(advancement).isDone()) {
+                Collection<String> remainingCriteria = player.getAdvancementProgress(advancement).getRemainingCriteria();
+                Bukkit.getLogger().info(remainingCriteria.toString());
+                for (String remainingCriterion : remainingCriteria) player.getAdvancementProgress(getAdvancement())
+                        .awardCriteria(remainingCriterion);
+            }
+        }
+        return this;
+    }
+
+    public AdvancementAPI revoke(Player... players) {
+        Advancement advancement = getAdvancement();
+        for (Player player : players) {
+            if (player.getAdvancementProgress(advancement).isDone()) {
+                Collection<String> awardedCriteria = player.getAdvancementProgress(advancement).getAwardedCriteria();
+                Bukkit.getLogger().info(awardedCriteria.toString());
+                for (String awardedCriterion : awardedCriteria) player.getAdvancementProgress(getAdvancement())
+                        .revokeCriteria(awardedCriterion);
+            }
+        }
+        return this;
+    }
+
+    public Advancement getAdvancement() {
+        return Bukkit.getAdvancement(id);
+    }
+
 
 
     public enum FrameType {
