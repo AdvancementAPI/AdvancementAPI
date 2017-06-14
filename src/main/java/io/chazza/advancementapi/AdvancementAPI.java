@@ -151,7 +151,7 @@ public class AdvancementAPI {
     public AdvancementAPI show(JavaPlugin plugin,Player... players) {
         add();
         grant(players);
-        Bukkit.getScheduler().runTaskLater(plugin, (Runnable) () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
             revoke(players);
             remove();
         }, 20L);
