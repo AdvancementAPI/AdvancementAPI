@@ -3,8 +3,10 @@ package io.chazza.advancementapi;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Singular;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -22,89 +24,23 @@ import java.util.List;
  * Edited by GiansCode
  */
 
+@Builder
 public class AdvancementAPI {
 
+    @Getter
     private NamespacedKey id;
+    @Getter
     private String parent, trigger, icon, background;
+    @Getter
     private BaseComponent title, description;
+    @Getter
     private FrameType frame;
-    private boolean announce, shouldShowToast, shouldBeHiddenBeforeArchieved;
-    private List<ItemStack> items;
+    @Builder.Default
+    @Getter
+    private boolean announce = true, shouldShowToast = true, shouldBeHiddenBeforeArchieved = true;
+    @Singular
+    private List<ItemStack> items = Lists.newArrayList();
 
-    public AdvancementAPI(NamespacedKey id) {
-        this.id = id;
-        this.items = Lists.newArrayList();
-        this.announce = true;
-    }
-
-    public String getID() {
-        return id.toString();
-    }
-
-    public AdvancementAPI withIcon(String icon) {
-        this.icon = icon;
-        return this;
-    }
-
-    public AdvancementAPI withDescription(String description) {
-        this.description = new TextComponent(description);
-        return this;
-    }
-    public AdvancementAPI withDescription(BaseComponent description) {
-        this.description = description;
-        return this;
-    }
-
-    public AdvancementAPI withBackground(String url) {
-        this.background = url; //Fixed this for you, too
-        return this;
-    }
-
-    public AdvancementAPI withTitle(String title) {
-        this.title = new TextComponent(title);
-        return this;
-    }
-
-    public AdvancementAPI withTitle(BaseComponent title) {
-        this.title = title;
-        return this;
-    }
-
-
-    public AdvancementAPI withParent(String parent) {
-        this.parent = parent;
-        return this;
-    }
-
-    public AdvancementAPI withTrigger(String trigger) {
-        this.trigger = trigger;
-        return this;
-    }
-
-    public AdvancementAPI withItem(ItemStack is) {
-        items.add(is);
-        return this;
-    }
-
-    public AdvancementAPI withFrame(FrameType frame) {
-        this.frame = frame;
-        return this;
-    }
-
-    public AdvancementAPI withAnnouncement(boolean announce) {
-        this.announce = announce;
-        return this;
-    }
-
-    public AdvancementAPI withToast(boolean showToast) {
-        this.shouldShowToast = showToast;
-        return this;
-    }
-
-    public AdvancementAPI withShouldBeHiddenBeforeArchieved(boolean shouldBeHiddenBeforeArchieved) {
-        this.shouldBeHiddenBeforeArchieved = shouldBeHiddenBeforeArchieved;
-        return this;
-    }
 
     public void save(String world) {
         this.save(Bukkit.getWorld(world));
@@ -140,13 +76,13 @@ public class AdvancementAPI {
         display.put("title", getTitle());
         display.put("description", getDescription());
         display.put("background", getBackground());
-        display.put("frame", getFrame().toString());
-        display.put("announce_to_chat", getAnnouncement());
-        display.put("show_toast", getToast());
-        display.put("hidden", getshouldBeHiddenBeforeArchieved());
+        display.put("frame", frame.toString());
+        display.put("announce_to_chat", announce);
+        display.put("show_toast", shouldShowToast);
+        display.put("hidden", shouldBeHiddenBeforeArchieved);
 
 
-        json.put("parent", getParent());
+        json.put("parent", parent);
 
         JSONObject criteria = new JSONObject();
         JSONObject conditions = new JSONObject();
@@ -155,7 +91,7 @@ public class AdvancementAPI {
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
 
-        for (ItemStack i : getItems()) {
+        for (ItemStack i : items) {
             itemJSON.put("item", "minecraft:" + i.getType().name().toLowerCase());
             itemJSON.put("amount", i.getAmount());
             itemArray.add(itemJSON);
@@ -168,7 +104,7 @@ public class AdvancementAPI {
          */
 
         conditions.put("items", itemArray);
-        elytra.put("trigger", getTrigger());
+        elytra.put("trigger", trigger);
         elytra.put("conditions", conditions);
 
         criteria.put("elytra", elytra);
@@ -183,57 +119,13 @@ public class AdvancementAPI {
         return prettyJson;
     }
 
-    public String getIcon() {
-        return icon;
-    }
-
-    public BaseComponent getTitle() {
-        return title;
-    }
-
-    public BaseComponent getDescription() {
-        return description;
-    }
-
-    public String getBackground() {
-        return background;
-    }
-
-    public FrameType getFrame() {
-        return frame;
-    }
-
-    public boolean getAnnouncement() {
-        return announce;
-    }
-
-    public boolean getToast() {
-        return shouldShowToast;
-    }
-    public boolean getshouldBeHiddenBeforeArchieved() {
-        return shouldBeHiddenBeforeArchieved;
-    }
-
-    public String getParent() {
-        return parent;
-    }
-
-    public List<ItemStack> getItems() {
-        return items;
-    }
-
-    public String getTrigger() {
-        return trigger;
-    }
-
-
     public enum FrameType {
         TASK("task"),
         GOAL("goal"),
         CHALLENGE("challenge");
         private String name = "task";
 
-        private FrameType(String name) {
+        FrameType(String name) {
             this.name = name;
         }
 

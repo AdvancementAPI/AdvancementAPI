@@ -1,4 +1,5 @@
 import io.chazza.advancementapi.AdvancementAPI;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.junit.Before;
@@ -37,18 +38,19 @@ public class AdvancementAPITest {
     @Test
     public void createAndSave() {
 
-        AdvancementAPI api = new AdvancementAPI(new NamespacedKey("test", "addiction"))
-                .withTitle("Addiction!")
-                .withDescription("Eat an Apple!")
-                .withIcon("minecraft:golden_apple")
-                .withTrigger("minecraft:consume_item")
-                .withShouldBeHiddenBeforeArchieved(false)
-                .withToast(false)
-                .withBackground("minecraft:textures/gui/advancements/backgrounds/stone.png")
-                .withItem(new ItemStack(Material.APPLE, 1)).withFrame(AdvancementAPI.FrameType.GOAL);
-        api.save(worldName);
 
-
+        AdvancementAPI.builder()
+                .id(new NamespacedKey("test","addiction"))
+                .title(new TextComponent("Addiction!"))
+                .description(new TextComponent("Eat an Apple"))
+                .icon("minecraft:golden_apple")
+                .trigger("minecraft:consume_item")
+                .shouldBeHiddenBeforeArchieved(false)
+                .shouldShowToast(false)
+                .background("minecraft:textures/gui/advancements/backgrounds/stone.png")
+                .item(new ItemStack(Material.APPLE, 1))
+                .frame(AdvancementAPI.FrameType.GOAL)
+                .build().save(worldName);
     }
 
 }
