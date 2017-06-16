@@ -1,5 +1,3 @@
-package io.chazza.advancementapi;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.NamespacedKey;
@@ -16,18 +14,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import com.google.common.collect.Lists;
 
 /**
- * Rewritten by PROgrammer_JARvis
- * Originally Created by charliej on 14/05/2017.
- * Lately modified by DiscowZombie on 5/06/2017.
+ * @author charliej - the very API
+ * @author DiscowZombie - adopting for Builder-Pattern
+ * @author Ste3et_C0st - add/take advancement logic
+ * @author PROgrammer_JARvis - rework and combining
+ * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
-
-//Renamed into MessengerAdvancement as AdvancementAPI seems to be a better name for some Singleton @PROgrm_JARvis
-public class MessengerAdvancement {
+public class AdvancementAPI {
 
     private NamespacedKey id;
     private String
@@ -41,12 +41,35 @@ public class MessengerAdvancement {
     private FrameType frame = FrameType.TASK;
     private List<ItemStack> items = Lists.newArrayList();
 
-    public MessengerAdvancement(NamespacedKey id) {
+    private AdvancementAPI(NamespacedKey id) {
         this.id = id;
     }
 
-    public MessengerAdvancement(JavaPlugin plugin, String id) {
-        this.id = new NamespacedKey(plugin, id);
+    public static List<AdvancementAPI> advancements = new ArrayList<>();
+
+    public static List<AdvancementAPI> getAdvancements() {
+        return advancements;
+    }
+
+    public static AdvancementAPI build(NamespacedKey id) {
+        AdvancementAPI advancement = new AdvancementAPI(id);
+        advancements.add(advancement);
+        return advancement;
+    }
+
+    public static AdvancementAPI build(JavaPlugin plugin, String id) {
+        return build(new NamespacedKey(plugin, id));
+    }
+
+    public AdvancementAPI build() {
+        advancements.add(this);
+        return this;
+    }
+
+    public AdvancementAPI unbuild() {
+        remove();
+        AdvancementAPI.advancements.remove(this);
+        return this;
     }
 
     public String getID() {
@@ -57,37 +80,25 @@ public class MessengerAdvancement {
         return icon;
     }
 
-    public MessengerAdvancement withIcon(String icon) {
+    public AdvancementAPI icon(String icon) {
         this.icon = icon;
         return this;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public MessengerAdvancement withDescription(String description) {
+    public AdvancementAPI description(String description) {
         this.description = description;
         return this;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getBackground() {
         return background;
     }
 
-    public void setBackground(String background) {
-        this.background = background;
-    }
-
-    public MessengerAdvancement withBackground(String url) {
+    public AdvancementAPI background(String url) {
         this.background = url;
         return this;
     }
@@ -96,91 +107,63 @@ public class MessengerAdvancement {
         return title;
     }
 
-    public MessengerAdvancement withTitle(String title) {
+    public AdvancementAPI title(String title) {
         this.title = title;
         return this;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getParent() {
         return parent;
     }
 
-    public MessengerAdvancement withParent(String parent) {
+    public AdvancementAPI parent(String parent) {
         this.parent = parent;
         return this;
-    }
-
-    public void setParent(String parent) {
-        this.parent = parent;
     }
 
     public String getTrigger() {
         return trigger;
     }
 
-    public MessengerAdvancement withTrigger(String trigger) {
+    public AdvancementAPI trigger(String trigger) {
         this.trigger = trigger;
         return this;
-    }
-
-    public void setTrigger(String trigger) {
-        this.trigger = trigger;
     }
 
     public List<ItemStack> getItems() {
         return items;
     }
 
-    public MessengerAdvancement withItem(ItemStack itemStack) {
+    public AdvancementAPI addItem(ItemStack itemStack) {
         items.add(itemStack);
         return this;
-    }
-
-    public void addItem(ItemStack itemStack) {
-        items.add(itemStack);
     }
 
     public FrameType getFrame() {
         return frame;
     }
 
-    public MessengerAdvancement withFrame(FrameType frame) {
+    public AdvancementAPI frame(FrameType frame) {
         this.frame = frame;
         return this;
-    }
-
-    public void setFrame(FrameType frame) {
-        this.frame = frame;
     }
 
     public boolean getAnnouncement(){
         return announce;
     }
 
-    public MessengerAdvancement withAnnouncement(boolean announce){
+    public AdvancementAPI announcement(boolean announce){
         this.announce = announce;
         return this;
-    }
-
-    public void setAnnounce(boolean announce) {
-        this.announce = announce;
     }
 
     public boolean getToast(){
         return toast;
     }
 
-    public MessengerAdvancement withToast(boolean toast){
+    public AdvancementAPI toast(boolean toast){
         this.toast = toast;
         return this;
-    }
-
-    public void setToast(boolean toast) {
-        this.toast = toast;
     }
 
     @SuppressWarnings("unchecked")
@@ -214,7 +197,7 @@ public class MessengerAdvancement {
             itemArray.add(itemJSON);
         }
 
-	//Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
+        //Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
         /*
          * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
@@ -231,11 +214,9 @@ public class MessengerAdvancement {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        Bukkit.getLogger().info(gson.toJson(json));
-
         return gson.toJson(json);
     }
-	
+
     @Deprecated
     public void save(String world) {
         this.save(Bukkit.getWorld(world));
@@ -257,30 +238,30 @@ public class MessengerAdvancement {
             writer.write(getJSON());
             writer.flush();
             writer.close();
-            Bukkit.getLogger().info("[MessengerAdvancement] Created " + id.toString());
+            Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
         }catch(IOException e){
             e.printStackTrace();
         }
     }
 
     @SuppressWarnings("deprecation")
-    public MessengerAdvancement add() {
+    public AdvancementAPI add() {
         try {
             Bukkit.getUnsafe().loadAdvancement(id, getJSON());
-            Bukkit.getLogger().info("Successfully registered advancement.");
+            Bukkit.getLogger().info("[AdvancementAPI] Successfully registered advancement");
         } catch (IllegalArgumentException e) {
-            Bukkit.getLogger().info("Error registering advancement. It seems to already exist!");
+            Bukkit.getLogger().info("[AdvancementAPI] Error registering advancement. It seems to already exist");
         }
         return this;
     }
 
     @SuppressWarnings("deprecation")
-    public MessengerAdvancement remove() {
+    public AdvancementAPI remove() {
         Bukkit.getUnsafe().removeAdvancement(id);
         return this;
     }
 
-    public MessengerAdvancement show(JavaPlugin plugin, Player... players) {
+    public AdvancementAPI show(JavaPlugin plugin, Player... players) {
         add();
         grant(players);
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
@@ -293,12 +274,11 @@ public class MessengerAdvancement {
         return this;
     }
 
-    public MessengerAdvancement grant(Player... players) {
+    public AdvancementAPI grant(Player... players) {
         Advancement advancement = getAdvancement();
         for (Player player : players) {
             if (!player.getAdvancementProgress(advancement).isDone()) {
                 Collection<String> remainingCriteria = player.getAdvancementProgress(advancement).getRemainingCriteria();
-                Bukkit.getLogger().info(remainingCriteria.toString());
                 for (String remainingCriterion : remainingCriteria) player.getAdvancementProgress(getAdvancement())
                         .awardCriteria(remainingCriterion);
             }
@@ -306,12 +286,11 @@ public class MessengerAdvancement {
         return this;
     }
 
-    public MessengerAdvancement revoke(Player... players) {
+    public AdvancementAPI revoke(Player... players) {
         Advancement advancement = getAdvancement();
         for (Player player : players) {
             if (player.getAdvancementProgress(advancement).isDone()) {
                 Collection<String> awardedCriteria = player.getAdvancementProgress(advancement).getAwardedCriteria();
-                Bukkit.getLogger().info(awardedCriteria.toString());
                 for (String awardedCriterion : awardedCriteria) player.getAdvancementProgress(getAdvancement())
                         .revokeCriteria(awardedCriterion);
             }
@@ -342,5 +321,10 @@ public class MessengerAdvancement {
         public String toString(){
             return name;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Advancement(" + id + "|" + this.title + ")";
     }
 }
