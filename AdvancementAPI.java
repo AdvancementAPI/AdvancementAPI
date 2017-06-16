@@ -1,11 +1,12 @@
-package io.chazza.advancementapi;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.File;
@@ -13,27 +14,62 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
 import com.google.common.collect.Lists;
 
 /**
- * Created by charliej on 14/05/2017.
- * Last modification DiscowZombie on 5/06/2017.
+ * @author charliej - the very API
+ * @author DiscowZombie - adopting for Builder-Pattern
+ * @author Ste3et_C0st - add/take advancement logic
+ * @author PROgrammer_JARvis - rework and combining
+ * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
-
 public class AdvancementAPI {
 
     private NamespacedKey id;
-    private String title, parent, trigger, icon, description, background;
-    private boolean announce, toast;
-    private FrameType frame;
-    private List<ItemStack> items;
+    private String
+            title = "Untitled",
+            parent,
+            trigger = "minecraft:impossible",
+            icon = "minecraft:golden_apple",
+            description = "no description",
+            background = "minecraft:textures/gui/advancements/backgrounds/stone.png";
+    private boolean announce = false, toast = true;
+    private FrameType frame = FrameType.TASK;
+    private List<ItemStack> items = Lists.newArrayList();
 
-    public AdvancementAPI(NamespacedKey id) {
+    private AdvancementAPI(NamespacedKey id) {
         this.id = id;
-        this.items = Lists.newArrayList();
-        this.announce = true;
-        this.toast = true;
+    }
+
+    public static List<AdvancementAPI> advancements = new ArrayList<>();
+
+    public static List<AdvancementAPI> getAdvancements() {
+        return advancements;
+    }
+
+    public static AdvancementAPI build(NamespacedKey id) {
+        AdvancementAPI advancement = new AdvancementAPI(id);
+        advancements.add(advancement);
+        return advancement;
+    }
+
+    public static AdvancementAPI build(JavaPlugin plugin, String id) {
+        return build(new NamespacedKey(plugin, id));
+    }
+
+    public AdvancementAPI build() {
+        advancements.add(this);
+        return this;
+    }
+
+    public AdvancementAPI unbuild() {
+        remove();
+        AdvancementAPI.advancements.remove(this);
+        return this;
     }
 
     public String getID() {
@@ -44,7 +80,7 @@ public class AdvancementAPI {
         return icon;
     }
 
-    public AdvancementAPI withIcon(String icon) {
+    public AdvancementAPI icon(String icon) {
         this.icon = icon;
         return this;
     }
@@ -53,7 +89,7 @@ public class AdvancementAPI {
         return description;
     }
 
-    public AdvancementAPI withDescription(String description) {
+    public AdvancementAPI description(String description) {
         this.description = description;
         return this;
     }
@@ -62,7 +98,7 @@ public class AdvancementAPI {
         return background;
     }
 
-    public AdvancementAPI withBackground(String url) {
+    public AdvancementAPI background(String url) {
         this.background = url;
         return this;
     }
@@ -71,7 +107,7 @@ public class AdvancementAPI {
         return title;
     }
 
-    public AdvancementAPI withTitle(String title) {
+    public AdvancementAPI title(String title) {
         this.title = title;
         return this;
     }
@@ -80,7 +116,7 @@ public class AdvancementAPI {
         return parent;
     }
 
-    public AdvancementAPI withParent(String parent) {
+    public AdvancementAPI parent(String parent) {
         this.parent = parent;
         return this;
     }
@@ -89,7 +125,7 @@ public class AdvancementAPI {
         return trigger;
     }
 
-    public AdvancementAPI withTrigger(String trigger) {
+    public AdvancementAPI trigger(String trigger) {
         this.trigger = trigger;
         return this;
     }
@@ -98,8 +134,8 @@ public class AdvancementAPI {
         return items;
     }
 
-    public AdvancementAPI withItem(ItemStack is) {
-        items.add(is);
+    public AdvancementAPI addItem(ItemStack itemStack) {
+        items.add(itemStack);
         return this;
     }
 
@@ -107,7 +143,7 @@ public class AdvancementAPI {
         return frame;
     }
 
-    public AdvancementAPI withFrame(FrameType frame) {
+    public AdvancementAPI frame(FrameType frame) {
         this.frame = frame;
         return this;
     }
@@ -115,22 +151,23 @@ public class AdvancementAPI {
     public boolean getAnnouncement(){
         return announce;
     }
-    
-    public AdvancementAPI withAnnouncement(boolean announce){
+
+    public AdvancementAPI announcement(boolean announce){
         this.announce = announce;
         return this;
     }
-    
+
     public boolean getToast(){
-    	return toast;
-    }
-    
-    public AdvancementAPI withToast(boolean toast){
-    	this.toast = toast;
-    	return this;
+        return toast;
     }
 
-	public String getJSON() {
+    public AdvancementAPI toast(boolean toast){
+        this.toast = toast;
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getJSON() {
         JSONObject json = new JSONObject();
 
         JSONObject icon = new JSONObject();
@@ -154,13 +191,14 @@ public class AdvancementAPI {
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
 
-        for(ItemStack i : getItems()) {
-            itemJSON.put("item", "minecraft:"+ i.getType().name().toLowerCase());
-            itemJSON.put("amount", i.getAmount());
+        for(ItemStack itemStack : getItems()) {
+            itemJSON.put("item", "minecraft:"+ itemStack.getType().name().toLowerCase());
+            itemJSON.put("amount", itemStack.getAmount());
             itemArray.add(itemJSON);
         }
 
-        /**
+        //Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
+        /*
          * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
          */
@@ -175,51 +213,118 @@ public class AdvancementAPI {
         json.put("display", display);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String prettyJson = gson.toJson(json);
 
-        return prettyJson;
+        return gson.toJson(json);
     }
 
+    @Deprecated
     public void save(String world) {
         this.save(Bukkit.getWorld(world));
     }
-    
+
+    @Deprecated
     public void save(World world) {
-    	try {
-			Files.createDirectories(Paths.get(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
-					+ File.separator + id.getNamespace()));
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-    	File file = new File(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
-    			+ File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
-    	try{
-			file.createNewFile();
-			FileWriter writer = new FileWriter(file);
-			writer.write(getJSON());
-    		writer.flush();
-    		writer.close();
-    		Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+        try {
+            Files.createDirectories(Paths.get(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+                    + File.separator + id.getNamespace()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        File file = new File(world.getWorldFolder() + File.separator + "data" + File.separator + "advancements"
+                + File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
+        try{
+            file.createNewFile();
+            FileWriter writer = new FileWriter(file);
+            writer.write(getJSON());
+            writer.flush();
+            writer.close();
+            Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
-    
-    
+
+    @SuppressWarnings("deprecation")
+    public AdvancementAPI add() {
+        try {
+            Bukkit.getUnsafe().loadAdvancement(id, getJSON());
+            Bukkit.getLogger().info("[AdvancementAPI] Successfully registered advancement");
+        } catch (IllegalArgumentException e) {
+            Bukkit.getLogger().info("[AdvancementAPI] Error registering advancement. It seems to already exist");
+        }
+        return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    public AdvancementAPI remove() {
+        Bukkit.getUnsafe().removeAdvancement(id);
+        return this;
+    }
+
+    public AdvancementAPI show(JavaPlugin plugin, Player... players) {
+        add();
+        grant(players);
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override
+            public void run() {
+                revoke(players);
+                remove();
+            }
+        }, 20L);
+        return this;
+    }
+
+    public AdvancementAPI grant(Player... players) {
+        Advancement advancement = getAdvancement();
+        for (Player player : players) {
+            if (!player.getAdvancementProgress(advancement).isDone()) {
+                Collection<String> remainingCriteria = player.getAdvancementProgress(advancement).getRemainingCriteria();
+                for (String remainingCriterion : remainingCriteria) player.getAdvancementProgress(getAdvancement())
+                        .awardCriteria(remainingCriterion);
+            }
+        }
+        return this;
+    }
+
+    public AdvancementAPI revoke(Player... players) {
+        Advancement advancement = getAdvancement();
+        for (Player player : players) {
+            if (player.getAdvancementProgress(advancement).isDone()) {
+                Collection<String> awardedCriteria = player.getAdvancementProgress(advancement).getAwardedCriteria();
+                for (String awardedCriterion : awardedCriteria) player.getAdvancementProgress(getAdvancement())
+                        .revokeCriteria(awardedCriterion);
+            }
+        }
+        return this;
+    }
+
+    public Advancement getAdvancement() {
+        return Bukkit.getAdvancement(id);
+    }
+
     public enum FrameType {
-    	TASK("task"),
-    	GOAL("goal"),
-    	CHALLENGE("challenge");
-    	
-    	private String name = "task";
-    	
-    	private FrameType(String name){
-    	  this.name = name;
-    	}  
-    	
-    	public String toString(){
-    	  return name;
-    	}
+        TASK("task"),
+        GOAL("goal"),
+        CHALLENGE("challenge");
+
+        private String name = "task";
+
+        FrameType(String name){
+            this.name = name;
+        }
+
+        public FrameType RANDOM() {
+            FrameType[] frameTypes = FrameType.values();
+            return frameTypes[(int)(Math.random()*(frameTypes.length-1))];
+        }
+
+        public String toString(){
+            return name;
+        }
     }
-    
+
+    @Override
+    public String toString() {
+        return "Advancement(" + id + "|" + this.title + ")";
+    }
 }
