@@ -25,7 +25,7 @@ import com.google.common.collect.Lists;
 /**
  * @author charliej - the very API
  * @author DiscowZombie - adopting for Builder-Pattern
- * @author Ste3et_C0st  - add/take advancement logic
+ * @author Ste3et_C0st - add/take advancement logic
  * @author PROgrammer_JARvis - rework and combining
  * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
