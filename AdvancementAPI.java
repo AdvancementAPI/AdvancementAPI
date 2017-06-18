@@ -23,6 +23,8 @@ import com.google.common.collect.Lists;
 /**
  * @author charliej - the very API
  * @author DiscowZombie - adopting for Builder-Pattern
+ * @author 2008Choco - NamespacedKey support
+ * @author GiansCode - small but useful changes
  * @author Ste3et_C0st - add/take advancement logic
  * @author PROgrammer_JARvis - rework and combining
  * @author ysl3000 - useful advice and bug-tracking at PullRequests
@@ -148,6 +150,17 @@ public class AdvancementAPI {
         return this;
     }
 
+    public MessengerAdvancement frame(String frame) {
+        if (frame.equalsIgnoreCase("random")) return frame(FrameType.RANDOM());
+        else try {
+            frame(FrameType.valueOf(frame));
+        } catch (EnumConstantNotPresentException e) {
+            Bukkit.getLogger().info("[AdvancementAPI] Unknown FrameType given. Using default (TASK)");
+            frame(FrameType.TASK);
+        }
+        return this;
+    }
+    
     public boolean getAnnouncement(){
         return announce;
     }
@@ -313,7 +326,7 @@ public class AdvancementAPI {
             this.name = name;
         }
 
-        public FrameType RANDOM() {
+        public static FrameType RANDOM() {
             FrameType[] frameTypes = FrameType.values();
             return frameTypes[(int)(Math.random()*(frameTypes.length-1))];
         }
