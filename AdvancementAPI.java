@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -9,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,6 +34,7 @@ import com.google.common.collect.Lists;
 public class AdvancementAPI {
 
     private NamespacedKey id;
+    private int counter = 1;
     private String
             title = "Untitled",
             parent,
@@ -178,6 +181,11 @@ public class AdvancementAPI {
         this.toast = toast;
         return this;
     }
+    
+    public AdvancementAPI counter(int i){
+    	this.counter = i;
+    	return this;
+    }
 
     @SuppressWarnings("unchecked")
     public String getJSON() {
@@ -199,7 +207,6 @@ public class AdvancementAPI {
 
         JSONObject criteria = new JSONObject();
         JSONObject conditions = new JSONObject();
-        JSONObject elytra = new JSONObject();
 
         JSONArray itemArray = new JSONArray();
         JSONObject itemJSON = new JSONObject();
@@ -215,12 +222,16 @@ public class AdvancementAPI {
          * Define each criteria, for each criteria in list,
          * add items, trigger and conditions
          */
-
+        
         conditions.put("items", itemArray);
-        elytra.put("trigger", getTrigger());
-        elytra.put("conditions", conditions);
-
-        criteria.put("elytra", elytra);
+        
+        for(int i = 0; i<counter; i++){
+        	JSONObject triggerObj = new JSONObject();
+        	triggerObj.put("trigger", this.trigger);
+       	 	conditions.put("items", itemArray);
+       	 	triggerObj.put("conditions", conditions);
+            criteria.put("elytra" + i, triggerObj);
+        }
 
         json.put("criteria", criteria);
         json.put("display", display);
@@ -256,6 +267,44 @@ public class AdvancementAPI {
             e.printStackTrace();
         }
     }
+    
+    
+    
+    public boolean counterUp(Player player){
+    	String criteriaString = null;
+    	for(String criteria : getAdvancement().getCriteria()){
+    		if(player.getAdvancementProgress(getAdvancement()).getDateAwarded(criteria) != null){
+    			criteriaString = criteria;
+    		}else{
+    			break;
+    		}
+    	}
+    	if(criteriaString == null) return false;
+    	player.getAdvancementProgress(getAdvancement()).awardCriteria(criteriaString);
+    	return true;
+    }
+    
+    public boolean counterDown(Player player){
+    	String criteriaString = null;
+    	for(String criteria : getAdvancement().getCriteria()){
+    		if(player.getAdvancementProgress(getAdvancement()).getDateAwarded(criteria) != null){
+    			criteriaString = criteria;
+    		}else{
+    			break;
+    		}
+    	}
+    	if(criteriaString == null) return false;
+    	player.getAdvancementProgress(getAdvancement()).revokeCriteria(criteriaString);
+    	return true;
+    }
+    
+    public void counterReset(Player player){
+    	for(String criteria : getAdvancement().getCriteria()){
+    		if(player.getAdvancementProgress(getAdvancement()).getDateAwarded(criteria) != null){
+    			player.getAdvancementProgress(getAdvancement()).revokeCriteria(criteria);
+    		}
+    	}
+    }
 
     @SuppressWarnings("deprecation")
     public AdvancementAPI add() {
@@ -274,7 +323,7 @@ public class AdvancementAPI {
         return this;
     }
 
-    public AdvancementAPI show(JavaPlugin plugin, Player... players) {
+    public AdvancementAPI show(JavaPlugin plugin, final Player... players) {
         add();
         grant(players);
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
