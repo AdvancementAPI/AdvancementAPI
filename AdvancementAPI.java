@@ -153,7 +153,7 @@ public class AdvancementAPI {
         return this;
     }
 
-    public MessengerAdvancement frame(String frame) {
+    public AdvancementAPI frame(String frame) {
         if (frame.equalsIgnoreCase("random")) return frame(FrameType.RANDOM());
         else try {
             frame(FrameType.valueOf(frame));
