@@ -64,10 +64,12 @@ public class AdvancementAPI {
         return AdvancementAPI.hiddenBuilder().id(id);
     }
 
+    @Deprecated
     public void save(String world) {
         this.save(Bukkit.getWorld(world));
     }
 
+    @Deprecated
     public void save(World world) {
 
 
@@ -85,7 +87,6 @@ public class AdvancementAPI {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public String getJSON() {
         JsonObject json = new JsonObject();
 
