@@ -1,16 +1,16 @@
+package src;
+
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.File;
@@ -19,9 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.locks.Condition;
-
-import com.google.common.collect.Lists;
 
 /**
  * @author charliej - the very API
@@ -33,7 +30,7 @@ import com.google.common.collect.Lists;
  * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
 public class AdvancementAPI {
-
+    //TODO Reward API <-
     private NamespacedKey id;
     private int counter = 1;
     private String
@@ -50,9 +47,14 @@ public class AdvancementAPI {
     private AdvancementAPI(NamespacedKey id) {
         this.id = id;
         triggers=new HashSet<>();
-        triggers.add(new Trigger(TriggerType.IMPOSSIBLE,"default"));
+
     }
 
+    /**
+     * Only to be used for Testing!
+     */
+    @Deprecated
+    protected AdvancementAPI(){this(null);}
     public static List<AdvancementAPI> advancements = new ArrayList<>();
 
     public static List<AdvancementAPI> getAdvancements() {
@@ -73,6 +75,7 @@ public class AdvancementAPI {
         advancements.add(this);
         return this;
     }
+
 
     public AdvancementAPI unbuild() {
         remove();
@@ -108,7 +111,7 @@ public class AdvancementAPI {
     public String getBackground() {
         return background;
     }
-
+    //TODO Array/Enum of all known backgrounds for ease of access. Integrate with material enum.
     public AdvancementAPI background(String url) {
         this.background = url;
         return this;
@@ -157,7 +160,7 @@ public class AdvancementAPI {
         else try {
             frame(FrameType.valueOf(frame));
         } catch (EnumConstantNotPresentException e) {
-            Bukkit.getLogger().info("[AdvancementAPI] Unknown FrameType given. Using default (TASK)");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Unknown FrameType given. Using default (TASK)");
             frame(FrameType.TASK);
         }
         return this;
@@ -205,7 +208,7 @@ public class AdvancementAPI {
         json.put("parent", getParent());
 
         JSONObject criteria = new JSONObject();
-        JSONObject advConditions;
+
 
 
 
@@ -217,15 +220,15 @@ public class AdvancementAPI {
          */
         
 
-
+        if(getTriggers().isEmpty())
+            triggers.add(new Trigger(TriggerType.IMPOSSIBLE,"default"));
         for(Trigger trigger : getTriggers()) {
             JSONObject triggerObj = new JSONObject();
-            advConditions=new JSONObject();
-            triggerObj.put("trigger", "minecraft:"+trigger.type.toString().toLowerCase());
-            trigger.conditions.forEach(condition -> {
-                advConditions.put(condition.name,condition.set);
+            final JSONObject advConditions=new JSONObject();
 
-            });
+            triggerObj.put("trigger", "minecraft:"+trigger.type.toString().toLowerCase());
+            trigger.conditions.forEach(condition -> advConditions.put(condition.name,condition.set));
+           if(!trigger.conditions.isEmpty())
             triggerObj.put("conditions",advConditions);
             criteria.put(trigger.name,triggerObj);
         }
@@ -259,7 +262,7 @@ public class AdvancementAPI {
             writer.write(getJSON());
             writer.flush();
             writer.close();
-            Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+            Bukkit.getLogger().info("[src.AdvancementAPI] Created " + id.toString());
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -307,9 +310,9 @@ public class AdvancementAPI {
     public AdvancementAPI add() {
         try {
             Bukkit.getUnsafe().loadAdvancement(id, getJSON());
-            Bukkit.getLogger().info("[AdvancementAPI] Successfully registered advancement");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Successfully registered advancement");
         } catch (IllegalArgumentException e) {
-            Bukkit.getLogger().info("[AdvancementAPI] Error registering advancement. It seems to already exist");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Error registering advancement. It seems to already exist");
         }
         return this;
     }
@@ -387,31 +390,16 @@ public class AdvancementAPI {
         return "Advancement(" + id + "|" + this.title + ")";
     }
 
-    public class Trigger {
-        protected TriggerType type;
-        protected String name;
-        protected Set<Condition> conditions;
-        public Trigger(TriggerType type,String name){
-            this.name=name;
-            this.type=type;
-        }
-        public Trigger addCondition(Condition condition){
-            conditions.add(condition);
-            
-            
-            
-            return this;
-        }
-    }
+
     //BEGIN UTIL
-    protected JSONObject convertItemToJSON(ItemStack item,JSONObject itemJSON){
+    protected static JSONObject convertItemToJSON(ItemStack item,JSONObject itemJSON){
         itemJSON.put("item", "minecraft:"+ item.getType().name().toLowerCase());
         itemJSON.put("amount", item.getAmount());
         itemJSON.put("data",item.getData().getData());
         return itemJSON;
     }
     //BEGIN CLASSES
-    public class Condition{
+    public static class Condition{
        protected String name;
        protected Object set;
 
@@ -423,13 +411,30 @@ public class AdvancementAPI {
             this(name,convertItemToJSON(item,new JSONObject()));
 
         }
-        public Condition(String name, String value){
+        public Condition(String name, String set){
             this.name=name;
             this.set=set;
         }
     }
+    public static class Trigger {
+        protected TriggerType type;
+        protected String name;
+        protected Set<Condition> conditions;
+        public Trigger(TriggerType type,String name){
+            this.name=name;
+            this.type=type;
+            conditions=new HashSet<>();
+        }
+        public Trigger addCondition(Condition condition){
+            conditions.add(condition);
+
+
+
+            return this;
+        }
+    }
     
-    public enum TriggerType{
+    public static enum TriggerType{
         ARBITRARY_PLAYER_TICK,
         BRED_ANIMALS,
                 BREWED_POTION,
