@@ -38,15 +38,14 @@ public class AdvancementAPITest {
     @Test
     public void createAndSave() {
 
-        AdvancementAPI advancementAPI = AdvancementAPI.builder(new NamespacedKey("test","addiction"))
+        AdvancementAPI advancementAPI = AdvancementAPI.builder(new NamespacedKey("test", "addiction"))
                 .title(new TextComponent("Addiction!"))
                 .description(new TextComponent("Eat an Apple"))
                 .icon("minecraft:golden_apple")
-                .trigger("minecraft:consume_item")
-                .shouldBeHiddenBeforeArchieved(false)
-                .shouldShowToast(false)
+                .trigger(AdvancementAPI.Trigger.builder(AdvancementAPI.Trigger.TriggerType.CONSUME_ITEM, "test").condition(AdvancementAPI.Condition.builder("potion", new ItemStack(Material.APPLE, 1))))
+                .hidden(false)
+                .toast(false)
                 .background("minecraft:textures/gui/advancements/backgrounds/stone.png")
-                .item(new ItemStack(Material.APPLE, 1))
                 .frame(AdvancementAPI.FrameType.GOAL)
                 .build();
 
