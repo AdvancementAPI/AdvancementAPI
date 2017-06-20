@@ -14,7 +14,7 @@
     </properties>
 
 
-   <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -27,13 +27,6 @@
             <artifactId>spigot-api</artifactId>
             <version>1.12-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>

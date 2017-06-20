@@ -2,10 +2,13 @@ package io.chazza.advancementapi;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
-import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -13,7 +16,6 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,12 +24,19 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Created by charliej on 14/05/2017.
- * Edited by GiansCode
+ * @author charliej - the very API
+ * @author DiscowZombie - adopting for Builder-Pattern
+ * @author 2008Choco - NamespacedKey support
+ * @author GiansCode - small but useful changes
+ * @author Ste3et_C0st - add/take advancement logic
+ * @author PROgrammer_JARvis - rework and combining
+ * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
 
 @Builder(builderMethodName = "hiddenBuilder")
 public class AdvancementAPI {
+
+    private static final Gson gson = new Gson();
 
     @Getter
     private NamespacedKey id;
@@ -35,7 +44,7 @@ public class AdvancementAPI {
     @Getter
     private String parent, icon, background;
     @Getter
-    private BaseComponent title, description;
+    private TextComponent title, description;
     @Getter
     private FrameType frame;
     @Builder.Default
@@ -79,24 +88,24 @@ public class AdvancementAPI {
 
     @SuppressWarnings("unchecked")
     public String getJSON() {
-        JSONObject json = new JSONObject();
+        JsonObject json = new JsonObject();
 
-        JSONObject icon = new JSONObject();
-        icon.put("item", getIcon());
+        JsonObject icon = new JsonObject();
+        icon.addProperty("item", getIcon());
 
-        JSONObject display = new JSONObject();
-        display.put("icon", icon);
-        display.put("title", getTitle());
-        display.put("description", getDescription());
-        display.put("background", getBackground());
-        display.put("frame", getFrame().toString());
-        display.put("announce_to_chat", announce);
-        display.put("show_toast", toast);
-        display.put("hidden", hidden);
+        JsonObject display = new JsonObject();
+        display.add("icon", icon);
+        display.add("title", getJsonFromComponent(getTitle()));
+        display.add("description", getJsonFromComponent(getDescription()));
+        display.addProperty("background", getBackground());
+        display.addProperty("frame", getFrame().toString());
+        display.addProperty("announce_to_chat", announce);
+        display.addProperty("show_toast", toast);
+        display.addProperty("hidden", hidden);
 
-        json.put("parent", getParent());
+        json.addProperty("parent", getParent());
 
-        JSONObject criteria = new JSONObject();
+        JsonObject criteria = new JsonObject();
 
 
         //Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
@@ -110,15 +119,20 @@ public class AdvancementAPI {
 
         for (Trigger.TriggerBuilder triggerBuilder : getTriggers()) {
             Trigger trigger = triggerBuilder.build();
-            criteria.put(trigger.name, trigger.toJsonObject());
+            criteria.add(trigger.name, trigger.toJsonObject());
         }
 
-        json.put("criteria", criteria);
-        json.put("display", display);
+        json.add("criteria", criteria);
+        json.add("display", display);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         return gson.toJson(json);
+    }
+
+    public static JsonElement getJsonFromComponent(TextComponent textComponent) {
+        return gson.fromJson(ComponentSerializer.toString(textComponent), JsonElement.class);
+
     }
 
     public AdvancementAPI show(JavaPlugin plugin, Player... players) {
@@ -238,14 +252,13 @@ public class AdvancementAPI {
         }
     }
 
-
     //BEGIN CLASSES
     @Builder(builderMethodName = "hiddenbuilder")
     public static class Condition {
         protected String name;
-        protected JSONObject set;
+        protected JsonObject set;
 
-        public static Condition.ConditionBuilder builder(String name, JSONObject itemStack) {
+        public static Condition.ConditionBuilder builder(String name, JsonObject itemStack) {
             return Condition.hiddenbuilder().name(name).set(itemStack);
         }
 
@@ -255,11 +268,11 @@ public class AdvancementAPI {
 
 
         //BEGIN UTIL
-        private static JSONObject convertItemToJSON(ItemStack item) {
-            JSONObject itemJSON = new JSONObject();
-            itemJSON.put("item", "minecraft:" + item.getType().name().toLowerCase());
-            itemJSON.put("amount", item.getAmount());
-            itemJSON.put("data", item.getData().getData());
+        private static JsonObject convertItemToJSON(ItemStack item) {
+            JsonObject itemJSON = new JsonObject();
+            itemJSON.addProperty("item", "minecraft:" + item.getType().name().toLowerCase());
+            itemJSON.addProperty("amount", item.getAmount());
+            itemJSON.addProperty("data", item.getData().getData());
             return itemJSON;
         }
     }
@@ -275,20 +288,20 @@ public class AdvancementAPI {
             return Trigger.hiddenbuilder().type(type).name(name);
         }
 
-        public JSONObject toJsonObject() {
+        public JsonObject toJsonObject() {
 
-            JSONObject triggerObj = new JSONObject();
+            JsonObject triggerObj = new JsonObject();
 
-            final JSONObject advConditions = new JSONObject();
+            final JsonObject advConditions = new JsonObject();
             // that doesn't fit in here
-            triggerObj.put("trigger", "minecraft:" + this.type.toString().toLowerCase());
+            triggerObj.addProperty("trigger", "minecraft:" + this.type.toString().toLowerCase());
             this.conditions.forEach(conditionBuilder -> {
 
                 Condition condition = conditionBuilder.build();
-                advConditions.put(condition.name, condition.set);
+                advConditions.add(condition.name, condition.set);
             });
             if (!this.conditions.isEmpty())
-                triggerObj.put("conditions", advConditions);
+                triggerObj.add("conditions", advConditions);
 
 
             return triggerObj;

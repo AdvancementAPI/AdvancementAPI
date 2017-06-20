@@ -1,4 +1,5 @@
 import io.chazza.advancementapi.AdvancementAPI;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
@@ -38,8 +39,14 @@ public class AdvancementAPITest {
     @Test
     public void createAndSave() {
 
+
+        TextComponent textComponent = new TextComponent("Addiction!");
+        textComponent.setBold(true);
+        textComponent.setColor(ChatColor.GOLD);
+
+
         AdvancementAPI advancementAPI = AdvancementAPI.builder(new NamespacedKey("test", "addiction"))
-                .title(new TextComponent("Addiction!"))
+                .title(textComponent)
                 .description(new TextComponent("Eat an Apple"))
                 .icon("minecraft:golden_apple")
                 .trigger(AdvancementAPI.Trigger.builder(AdvancementAPI.Trigger.TriggerType.CONSUME_ITEM, "test").condition(AdvancementAPI.Condition.builder("potion", new ItemStack(Material.APPLE, 1))))
