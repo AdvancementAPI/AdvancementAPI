@@ -319,7 +319,6 @@ public class AdvancementAPI {
             JsonObject triggerObj = new JsonObject();
 
             final JsonObject advConditions = new JsonObject();
-            // that doesn't fit in here
             triggerObj.addProperty("trigger", "minecraft:" + this.type.toString().toLowerCase());
             this.conditions.forEach(conditionBuilder -> {
 
