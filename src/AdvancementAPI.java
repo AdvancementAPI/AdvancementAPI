@@ -1,14 +1,16 @@
+package src;
+
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import org.bukkit.NamespacedKey;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.File;
@@ -16,11 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import com.google.common.collect.Lists;
+import java.util.*;
 
 /**
  * @author charliej - the very API
@@ -32,24 +30,31 @@ import com.google.common.collect.Lists;
  * @author ysl3000 - useful advice and bug-tracking at PullRequests
  */
 public class AdvancementAPI {
-
+    //TODO Reward API <-
     private NamespacedKey id;
     private int counter = 1;
     private String
             title = "Untitled",
             parent,
-            trigger = "minecraft:impossible",
             icon = "minecraft:golden_apple",
             description = "no description",
             background = "minecraft:textures/gui/advancements/backgrounds/stone.png";
     private boolean announce = false, toast = true;
     private FrameType frame = FrameType.TASK;
     private List<ItemStack> items = Lists.newArrayList();
+    private Set<Trigger> triggers;
 
     private AdvancementAPI(NamespacedKey id) {
         this.id = id;
+        triggers=new HashSet<>();
+
     }
 
+    /**
+     * Only to be used for Testing!
+     */
+    @Deprecated
+    protected AdvancementAPI(){this(null);}
     public static List<AdvancementAPI> advancements = new ArrayList<>();
 
     public static List<AdvancementAPI> getAdvancements() {
@@ -71,6 +76,7 @@ public class AdvancementAPI {
         return this;
     }
 
+
     public AdvancementAPI unbuild() {
         remove();
         AdvancementAPI.advancements.remove(this);
@@ -89,6 +95,9 @@ public class AdvancementAPI {
         this.icon = icon;
         return this;
     }
+    public AdvancementAPI icon(Material icon){
+        return this.icon("minecraft:"+icon.name().toLowerCase());
+    }
 
     public String getDescription() {
         return description;
@@ -102,7 +111,7 @@ public class AdvancementAPI {
     public String getBackground() {
         return background;
     }
-
+    //TODO Array/Enum of all known backgrounds for ease of access. Integrate with material enum.
     public AdvancementAPI background(String url) {
         this.background = url;
         return this;
@@ -126,23 +135,16 @@ public class AdvancementAPI {
         return this;
     }
 
-    public String getTrigger() {
-        return trigger;
+    public Set<Trigger> getTriggers() {
+        return triggers;
     }
 
-    public AdvancementAPI trigger(String trigger) {
-        this.trigger = trigger;
+    public AdvancementAPI addTrigger(Trigger trigger) {
+        triggers.add(trigger);
         return this;
     }
 
-    public List<ItemStack> getItems() {
-        return items;
-    }
 
-    public AdvancementAPI addItem(ItemStack itemStack) {
-        items.add(itemStack);
-        return this;
-    }
 
     public FrameType getFrame() {
         return frame;
@@ -158,7 +160,7 @@ public class AdvancementAPI {
         else try {
             frame(FrameType.valueOf(frame));
         } catch (EnumConstantNotPresentException e) {
-            Bukkit.getLogger().info("[AdvancementAPI] Unknown FrameType given. Using default (TASK)");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Unknown FrameType given. Using default (TASK)");
             frame(FrameType.TASK);
         }
         return this;
@@ -206,16 +208,10 @@ public class AdvancementAPI {
         json.put("parent", getParent());
 
         JSONObject criteria = new JSONObject();
-        JSONObject conditions = new JSONObject();
 
-        JSONArray itemArray = new JSONArray();
-        JSONObject itemJSON = new JSONObject();
 
-        for(ItemStack itemStack : getItems()) {
-            itemJSON.put("item", "minecraft:"+ itemStack.getType().name().toLowerCase());
-            itemJSON.put("amount", itemStack.getAmount());
-            itemArray.add(itemJSON);
-        }
+
+
 
         //Changed to normal comment as JavaDocs are not displayed here @PROgrm_JARvis
         /*
@@ -223,14 +219,18 @@ public class AdvancementAPI {
          * add items, trigger and conditions
          */
         
-        conditions.put("items", itemArray);
-        
-        for(int i = 0; i<counter; i++){
-        	JSONObject triggerObj = new JSONObject();
-        	triggerObj.put("trigger", this.trigger);
-       	 	conditions.put("items", itemArray);
-       	 	triggerObj.put("conditions", conditions);
-            criteria.put("elytra" + i, triggerObj);
+
+        if(getTriggers().isEmpty())
+            triggers.add(new Trigger(TriggerType.IMPOSSIBLE,"default"));
+        for(Trigger trigger : getTriggers()) {
+            JSONObject triggerObj = new JSONObject();
+            final JSONObject advConditions=new JSONObject();
+
+            triggerObj.put("trigger", "minecraft:"+trigger.type.toString().toLowerCase());
+            trigger.conditions.forEach(condition -> advConditions.put(condition.name,condition.set));
+           if(!trigger.conditions.isEmpty())
+            triggerObj.put("conditions",advConditions);
+            criteria.put(trigger.name,triggerObj);
         }
 
         json.put("criteria", criteria);
@@ -262,7 +262,7 @@ public class AdvancementAPI {
             writer.write(getJSON());
             writer.flush();
             writer.close();
-            Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
+            Bukkit.getLogger().info("[src.AdvancementAPI] Created " + id.toString());
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -310,9 +310,9 @@ public class AdvancementAPI {
     public AdvancementAPI add() {
         try {
             Bukkit.getUnsafe().loadAdvancement(id, getJSON());
-            Bukkit.getLogger().info("[AdvancementAPI] Successfully registered advancement");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Successfully registered advancement");
         } catch (IllegalArgumentException e) {
-            Bukkit.getLogger().info("[AdvancementAPI] Error registering advancement. It seems to already exist");
+            Bukkit.getLogger().info("[src.AdvancementAPI] Error registering advancement. It seems to already exist");
         }
         return this;
     }
@@ -388,5 +388,82 @@ public class AdvancementAPI {
     @Override
     public String toString() {
         return "Advancement(" + id + "|" + this.title + ")";
+    }
+
+
+    //BEGIN UTIL
+    protected static JSONObject convertItemToJSON(ItemStack item,JSONObject itemJSON){
+        itemJSON.put("item", "minecraft:"+ item.getType().name().toLowerCase());
+        itemJSON.put("amount", item.getAmount());
+        itemJSON.put("data",item.getData().getData());
+        return itemJSON;
+    }
+    //BEGIN CLASSES
+    public static class Condition{
+       protected String name;
+       protected Object set;
+
+        public Condition(String name, JSONObject set) {
+            this.name=name;
+            this.set=set;
+        }
+        public Condition(String name,ItemStack item){
+            this(name,convertItemToJSON(item,new JSONObject()));
+
+        }
+        public Condition(String name, String set){
+            this.name=name;
+            this.set=set;
+        }
+    }
+    public static class Trigger {
+        protected TriggerType type;
+        protected String name;
+        protected Set<Condition> conditions;
+        public Trigger(TriggerType type,String name){
+            this.name=name;
+            this.type=type;
+            conditions=new HashSet<>();
+        }
+        public Trigger addCondition(Condition condition){
+            conditions.add(condition);
+
+
+
+            return this;
+        }
+    }
+    
+    public static enum TriggerType{
+        ARBITRARY_PLAYER_TICK,
+        BRED_ANIMALS,
+                BREWED_POTION,
+        CHANGED_DIMENSION,
+                CONSTRUCT_BEACON,
+        CONSUME_ITEM,
+                CURED_ZOMBIE_VILLAGER,
+        ENCHANTED_ITEM,
+                ENTER_BLOCK,
+        ENTITY_HURT_PLAYER,
+                ENTITY_KILLED_PLAYER,
+        IMPOSSIBLE,
+                INVENTORY_CHANGED,
+        ITEM_DURABILITY_CHANGED,
+                LEVITATION,
+        LOCATION,
+                PLACED_BLOCK,
+        PLAYER_HURT_ENTITY,
+                PLAYER_KILLED_ENTITY,
+        RECIPE_UNLOCKED,
+                SLEPT_IN_BED,
+        SUMMONED_ENTITY,
+                TAME_ANIMAL,
+        TICK,
+                USED_ENDER_EYE,
+        VILLAGER_TRADE
+
+        
+
+
     }
 }
