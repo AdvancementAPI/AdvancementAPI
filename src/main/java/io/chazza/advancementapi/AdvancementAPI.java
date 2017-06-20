@@ -240,11 +240,20 @@ public class AdvancementAPI {
             this.name = name;
         }
 
+        public static FrameType getFromString(String frameType) {
+            if (frameType.equalsIgnoreCase("random")) return FrameType.RANDOM();
+            else try {
+                return FrameType.valueOf(frameType);
+            } catch (EnumConstantNotPresentException e) {
+                Bukkit.getLogger().info("[src.AdvancementAPI] Unknown FrameType given. Using default (TASK)");
+                return FrameType.TASK;
+            }
+        }
+
         public static FrameType RANDOM() {
             FrameType[] frameTypes = FrameType.values();
             return frameTypes[(int) (Math.random() * (frameTypes.length - 1))];
         }
-
 
         public String toString() {
             return name;
