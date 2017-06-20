@@ -362,8 +362,5 @@ public class AdvancementAPI {
             USED_ENDER_EYE,
             VILLAGER_TRADE
         }
-
     }
-
-
 }
