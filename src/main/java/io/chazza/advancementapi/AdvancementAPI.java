@@ -64,7 +64,6 @@ public class AdvancementAPI {
         return AdvancementAPI.hiddenBuilder().id(id);
     }
 
-
     public void save(String world) {
         this.save(Bukkit.getWorld(world));
     }
@@ -230,7 +229,6 @@ public class AdvancementAPI {
         }
     }
 
-
     public enum FrameType {
         TASK("task"),
         GOAL("goal"),
@@ -250,6 +248,33 @@ public class AdvancementAPI {
         public String toString() {
             return name;
         }
+    }
+
+    public static class AdvancementAPIBuilder {
+        public AdvancementAPIBuilder title(String title) {
+
+            this.title = new TextComponent(title);
+
+            return this;
+        }
+
+        public AdvancementAPIBuilder title(TextComponent title) {
+            this.title = title;
+
+            return this;
+        }
+
+        public AdvancementAPIBuilder description(String description) {
+            this.description = new TextComponent(description);
+            return this;
+        }
+
+        public AdvancementAPIBuilder description(TextComponent description) {
+            this.description = description;
+            return this;
+        }
+
+
     }
 
     //BEGIN CLASSES
