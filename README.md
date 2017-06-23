@@ -1,4 +1,4 @@
-# src.AdvancementAPI
+# AdvancementAPI
 Easily create custom advancements!
 
 Wiki Page available at http://pluginwiki.io/advancementapi
