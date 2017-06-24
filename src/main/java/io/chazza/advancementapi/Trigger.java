@@ -21,11 +21,7 @@ public class Trigger {
     }
 
     public static TriggerBuilder builder(TriggerType type, String name) {
-        return Trigger.hiddenbuilder().type(type).name(name);
-    }
-
-    public static TriggerBuilder hiddenbuilder() {
-        return new TriggerBuilder();
+        return new TriggerBuilder().type(type).name(name);
     }
 
     public JsonObject toJsonObject() {
