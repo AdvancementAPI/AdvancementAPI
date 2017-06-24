@@ -30,7 +30,7 @@ import java.util.Set;
  * @author GiansCode - small but useful changes
  * @author Ste3et_C0st - add/take advancement logic
  * @author PROgrammer_JARvis - rework and combining
- * @author ysl3000 - useful advice and bug-tracking at PullRequests
+ * @author ysl3000 - useful advice and bug-tracking at PullRequests/ JUnit-Tests, full Builder-Pattern support, Lombok
  */
 
 @Builder(builderMethodName = "hiddenBuilder")
