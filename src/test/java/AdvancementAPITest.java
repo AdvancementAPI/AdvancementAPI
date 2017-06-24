@@ -45,7 +45,7 @@ public class AdvancementAPITest {
         AdvancementAPI parent = AdvancementAPI.builder(new NamespacedKey("test", "my/firststeps"))
                 .title("First Steps")
                 .description("Starting")
-                .icon("minecraft:golden_apple")
+                .icon("minecraft:wood_sword")
                 .trigger(
                         AdvancementAPI.Trigger.builder(
                                 AdvancementAPI.Trigger.TriggerType.CONSUME_ITEM, "test")

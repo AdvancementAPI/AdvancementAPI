@@ -247,7 +247,7 @@ public class AdvancementAPI {
             else try {
                 return FrameType.valueOf(frameType);
             } catch (EnumConstantNotPresentException e) {
-                Bukkit.getLogger().info("[src.AdvancementAPI] Unknown FrameType given. Using default (TASK)");
+                Bukkit.getLogger().info("[AdvancementAPI] Unknown FrameType given. Using default (TASK)");
                 return FrameType.TASK;
             }
         }
