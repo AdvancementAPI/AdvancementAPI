@@ -73,11 +73,13 @@ public class AdvancementAPI {
     public void save(World world) {
 
 
-        File dir = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
-                + File.separator + id.getNamespace());
+        File file = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
+                + File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
 
-        if (dir.mkdirs()) {
-            File file = new File(dir.getPath() + File.separator + id.getKey() + ".json");
+        File dir = file.getParentFile();
+
+        if (dir.mkdirs() || dir.exists()) {
+
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write(getJSON());
                 Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
