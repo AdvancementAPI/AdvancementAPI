@@ -16,11 +16,11 @@ public class Condition {
     }
 
     public static ConditionBuilder builder(String name, JsonObject itemStack) {
-        return Condition.hiddenbuilder().name(name).set(itemStack);
+        return new Condition.ConditionBuilder().name(name).set(itemStack);
     }
 
     public static ConditionBuilder builder(String name, ItemStack itemStack) {
-        return Condition.hiddenbuilder().name(name).set(convertItemToJSON(itemStack));
+        return Condition.builder(name,convertItemToJSON(itemStack));
     }
 
 
@@ -33,9 +33,7 @@ public class Condition {
         return itemJSON;
     }
 
-    public static ConditionBuilder hiddenbuilder() {
-        return new ConditionBuilder();
-    }
+
 
     public static class ConditionBuilder {
         private String name;
