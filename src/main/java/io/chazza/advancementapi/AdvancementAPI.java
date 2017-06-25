@@ -4,9 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Singular;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
@@ -14,12 +11,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
@@ -30,39 +27,42 @@ import java.util.Set;
  * @author GiansCode - small but useful changes
  * @author Ste3et_C0st - add/take advancement logic
  * @author PROgrammer_JARvis - rework and combining
- * @author ysl3000 - useful advice and bug-tracking at PullRequests
+ * @author ysl3000 - useful advice and bug-tracking at PullRequests/ JUnit-Tests, full Builder-Pattern support, Lombok
  */
 
-@Builder(builderMethodName = "hiddenBuilder")
 public class AdvancementAPI {
 
     private static final Gson gson = new Gson();
 
-    @Getter
     private NamespacedKey id;
-    @Builder.Default
-    @Getter
     private String parent, icon, background;
-    @Getter
     private TextComponent title, description;
-    @Getter
     private FrameType frame;
-    @Builder.Default
-    @Getter
     private boolean announce = true, toast = true, hidden = true;
-
-    @Builder.Default
-    @Getter
     private int counter = 1;
 
-    @Singular
-    @Getter
     private Set<Trigger.TriggerBuilder> triggers;
+
+    private AdvancementAPI(NamespacedKey id, String parent, String icon, String background, TextComponent title, TextComponent description, FrameType frame, boolean announce, boolean toast, boolean hidden, int counter, Set<Trigger.TriggerBuilder> triggers) {
+        this.id = id;
+        this.parent = parent;
+        this.icon = icon;
+        this.background = background;
+        this.title = title;
+        this.description = description;
+        this.frame = frame;
+        this.announce = announce;
+        this.toast = toast;
+        this.hidden = hidden;
+        this.counter = counter;
+        this.triggers = triggers;
+    }
 
 
     public static AdvancementAPIBuilder builder(NamespacedKey id) {
-        return AdvancementAPI.hiddenBuilder().id(id);
+        return new AdvancementAPIBuilder().id(id);
     }
+
 
     @Deprecated
     public void save(String world) {
@@ -73,11 +73,13 @@ public class AdvancementAPI {
     public void save(World world) {
 
 
-        File dir = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
-                + File.separator + id.getNamespace());
+        File file = new File(world.getWorldFolder(), "data" + File.separator + "advancements"
+                + File.separator + id.getNamespace() + File.separator + id.getKey() + ".json");
 
-        if (dir.mkdirs()) {
-            File file = new File(dir.getPath() + File.separator + id.getKey() + ".json");
+        File dir = file.getParentFile();
+
+        if (dir.mkdirs() || dir.exists()) {
+
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write(getJSON());
                 Bukkit.getLogger().info("[AdvancementAPI] Created " + id.toString());
@@ -130,9 +132,37 @@ public class AdvancementAPI {
         return gson.toJson(json);
     }
 
+    public String getIcon() {
+        return this.icon;
+    }
+
     public static JsonElement getJsonFromComponent(TextComponent textComponent) {
         return gson.fromJson(ComponentSerializer.toString(textComponent), JsonElement.class);
 
+    }
+
+    public TextComponent getTitle() {
+        return this.title;
+    }
+
+    public TextComponent getDescription() {
+        return this.description;
+    }
+
+    public String getBackground() {
+        return this.background;
+    }
+
+    public FrameType getFrame() {
+        return this.frame;
+    }
+
+    public String getParent() {
+        return this.parent;
+    }
+
+    public Set<Trigger.TriggerBuilder> getTriggers() {
+        return this.triggers;
     }
 
     public AdvancementAPI show(JavaPlugin plugin, Player... players) {
@@ -230,37 +260,43 @@ public class AdvancementAPI {
         }
     }
 
-    public enum FrameType {
-        TASK("task"),
-        GOAL("goal"),
-        CHALLENGE("challenge");
-        private String name;
+    public NamespacedKey getId() {
+        return this.id;
+    }
 
-        FrameType(String name) {
-            this.name = name;
-        }
+    public boolean isAnnounce() {
+        return this.announce;
+    }
 
-        public static FrameType getFromString(String frameType) {
-            if (frameType.equalsIgnoreCase("random")) return FrameType.RANDOM();
-            else try {
-                return FrameType.valueOf(frameType);
-            } catch (EnumConstantNotPresentException e) {
-                Bukkit.getLogger().info("[src.AdvancementAPI] Unknown FrameType given. Using default (TASK)");
-                return FrameType.TASK;
-            }
-        }
+    public boolean isToast() {
+        return this.toast;
+    }
 
-        public static FrameType RANDOM() {
-            FrameType[] frameTypes = FrameType.values();
-            return frameTypes[(int) (Math.random() * (frameTypes.length - 1))];
-        }
+    public boolean isHidden() {
+        return this.hidden;
+    }
 
-        public String toString() {
-            return name;
-        }
+    public int getCounter() {
+        return this.counter;
     }
 
     public static class AdvancementAPIBuilder {
+        private NamespacedKey id;
+        private String parent;
+        private String icon;
+        private String background;
+        private TextComponent title;
+        private TextComponent description;
+        private FrameType frame;
+        private boolean announce;
+        private boolean toast;
+        private boolean hidden;
+        private int counter;
+        private ArrayList<Trigger.TriggerBuilder> triggers;
+
+        AdvancementAPIBuilder() {
+        }
+
         public AdvancementAPIBuilder title(String title) {
 
             this.title = new TextComponent(title);
@@ -285,91 +321,93 @@ public class AdvancementAPI {
         }
 
 
+        public AdvancementAPIBuilder id(NamespacedKey id) {
+            this.id = id;
+            return this;
+        }
+
+        public AdvancementAPIBuilder parent(String parent) {
+            this.parent = parent;
+            return this;
+        }
+
+        public AdvancementAPIBuilder icon(String icon) {
+            this.icon = icon;
+            return this;
+        }
+
+        public AdvancementAPIBuilder background(String background) {
+            this.background = background;
+            return this;
+        }
+
+        public AdvancementAPIBuilder frame(FrameType frame) {
+            this.frame = frame;
+            return this;
+        }
+
+        public AdvancementAPIBuilder announce(boolean announce) {
+            this.announce = announce;
+            return this;
+        }
+
+        public AdvancementAPIBuilder toast(boolean toast) {
+            this.toast = toast;
+            return this;
+        }
+
+        public AdvancementAPIBuilder hidden(boolean hidden) {
+            this.hidden = hidden;
+            return this;
+        }
+
+        public AdvancementAPIBuilder counter(int counter) {
+            this.counter = counter;
+            return this;
+        }
+
+        public AdvancementAPIBuilder trigger(Trigger.TriggerBuilder trigger) {
+            if (this.triggers == null)
+                this.triggers = new ArrayList<Trigger.TriggerBuilder>();
+            this.triggers.add(trigger);
+            return this;
+        }
+
+        public AdvancementAPIBuilder triggers(Collection<? extends Trigger.TriggerBuilder> triggers) {
+            if (this.triggers == null)
+                this.triggers = new ArrayList<Trigger.TriggerBuilder>();
+            this.triggers.addAll(triggers);
+            return this;
+        }
+
+        public AdvancementAPIBuilder clearTriggers() {
+            if (this.triggers != null)
+                this.triggers.clear();
+
+            return this;
+        }
+
+        public AdvancementAPI build() {
+            Set<Trigger.TriggerBuilder> triggers;
+            switch (this.triggers == null ? 0 : this.triggers.size()) {
+                case 0:
+                    triggers = java.util.Collections.emptySet();
+                    break;
+                case 1:
+                    triggers = java.util.Collections.singleton(this.triggers.get(0));
+                    break;
+                default:
+                    triggers = new java.util.LinkedHashSet<Trigger.TriggerBuilder>(this.triggers.size() < 1073741824 ? 1 + this.triggers.size() + (this.triggers.size() - 3) / 3 : Integer.MAX_VALUE);
+                    triggers.addAll(this.triggers);
+                    triggers = java.util.Collections.unmodifiableSet(triggers);
+            }
+
+            return new AdvancementAPI(id, parent, icon, background, title, description, frame, announce, toast, hidden, counter, triggers);
+        }
+
+        public String toString() {
+            return "io.chazza.advancementapi.AdvancementAPI.AdvancementAPIBuilder(id=" + this.id + ", parent=" + this.parent + ", icon=" + this.icon + ", background=" + this.background + ", title=" + this.title + ", description=" + this.description + ", frame=" + this.frame + ", announce=" + this.announce + ", toast=" + this.toast + ", hidden=" + this.hidden + ", counter=" + this.counter + ", triggers=" + this.triggers + ")";
+        }
     }
 
-    //BEGIN CLASSES
-    @Builder(builderMethodName = "hiddenbuilder")
-    public static class Condition {
-        protected String name;
-        protected JsonObject set;
-
-        public static Condition.ConditionBuilder builder(String name, JsonObject itemStack) {
-            return Condition.hiddenbuilder().name(name).set(itemStack);
-        }
-
-        public static Condition.ConditionBuilder builder(String name, ItemStack itemStack) {
-            return Condition.hiddenbuilder().name(name).set(convertItemToJSON(itemStack));
-        }
-
-
-        //BEGIN UTIL
-        private static JsonObject convertItemToJSON(ItemStack item) {
-            JsonObject itemJSON = new JsonObject();
-            itemJSON.addProperty("item", "minecraft:" + item.getType().name().toLowerCase());
-            itemJSON.addProperty("amount", item.getAmount());
-            itemJSON.addProperty("data", item.getData().getData());
-            return itemJSON;
-        }
-    }
-
-    @Builder(builderMethodName = "hiddenbuilder")
-    public static class Trigger {
-        protected TriggerType type;
-        protected String name;
-        @Singular
-        protected Set<Condition.ConditionBuilder> conditions;
-
-        public static Trigger.TriggerBuilder builder(TriggerType type, String name) {
-            return Trigger.hiddenbuilder().type(type).name(name);
-        }
-
-        public JsonObject toJsonObject() {
-
-            JsonObject triggerObj = new JsonObject();
-
-            final JsonObject advConditions = new JsonObject();
-            triggerObj.addProperty("trigger", "minecraft:" + this.type.toString().toLowerCase());
-            this.conditions.forEach(conditionBuilder -> {
-
-                Condition condition = conditionBuilder.build();
-                advConditions.add(condition.name, condition.set);
-            });
-            if (!this.conditions.isEmpty())
-                triggerObj.add("conditions", advConditions);
-
-
-            return triggerObj;
-
-        }
-
-
-        public static enum TriggerType {
-            ARBITRARY_PLAYER_TICK,
-            BRED_ANIMALS,
-            BREWED_POTION,
-            CHANGED_DIMENSION,
-            CONSTRUCT_BEACON,
-            CONSUME_ITEM,
-            CURED_ZOMBIE_VILLAGER,
-            ENCHANTED_ITEM,
-            ENTER_BLOCK,
-            ENTITY_HURT_PLAYER,
-            ENTITY_KILLED_PLAYER,
-            IMPOSSIBLE,
-            INVENTORY_CHANGED,
-            ITEM_DURABILITY_CHANGED,
-            LEVITATION,
-            LOCATION,
-            PLACED_BLOCK,
-            PLAYER_HURT_ENTITY,
-            PLAYER_KILLED_ENTITY,
-            RECIPE_UNLOCKED,
-            SLEPT_IN_BED,
-            SUMMONED_ENTITY,
-            TAME_ANIMAL,
-            TICK,
-            USED_ENDER_EYE,
-            VILLAGER_TRADE
-        }
-    }
 }
