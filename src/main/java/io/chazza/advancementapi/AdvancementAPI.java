@@ -116,9 +116,6 @@ public class AdvancementAPI {
          * add items, trigger and conditions
          */
 
-        if (getTriggers().isEmpty())
-            triggers.add(Trigger.builder(Trigger.TriggerType.IMPOSSIBLE, "default"));
-
         for (Trigger.TriggerBuilder triggerBuilder : getTriggers()) {
             Trigger trigger = triggerBuilder.build();
             criteria.add(trigger.name, trigger.toJsonObject());
@@ -391,7 +388,7 @@ public class AdvancementAPI {
             Set<Trigger.TriggerBuilder> triggers;
             switch (this.triggers == null ? 0 : this.triggers.size()) {
                 case 0:
-                    triggers = java.util.Collections.emptySet();
+                    triggers = java.util.Collections.singleton(Trigger.builder(Trigger.TriggerType.IMPOSSIBLE, "default"));    
                     break;
                 case 1:
                     triggers = java.util.Collections.singleton(this.triggers.get(0));
